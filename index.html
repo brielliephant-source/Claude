@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Times Table Quest</title>
+<style>
+  :root {
+    --bg: #1e1b4b;
+    --bg2: #312e81;
+    --card: #ffffff;
+    --ink: #1f2937;
+    --muted: #6b7280;
+    --accent: #f59e0b;
+    --good: #22c55e;
+    --bad: #ef4444;
+    --locked: #9ca3af;
+    --radius: 18px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+    background: radial-gradient(circle at 20% 10%, var(--bg2), var(--bg));
+    color: var(--ink);
+    display: flex; justify-content: center;
+    min-height: 100%;
+  }
+  .app { width: 100%; max-width: 560px; padding: 16px; }
+  header { display: flex; align-items: center; justify-content: space-between; color: #fff; margin-bottom: 12px; gap: 8px; }
+  header h1 { font-size: 1.5rem; margin: 0; letter-spacing: .5px; }
+  .pill { background: rgba(255,255,255,.15); color: #fff; border-radius: 999px; padding: 6px 12px; font-weight: bold; white-space: nowrap; }
+  .card { background: var(--card); border-radius: var(--radius); padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,.3); }
+  .hidden { display: none !important; }
+
+  /* Level map */
+  .intro { color: var(--muted); margin: 0 0 16px; text-align: center; }
+  .levels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .level {
+    border: none; border-radius: 16px; padding: 14px 6px; cursor: pointer;
+    background: linear-gradient(160deg, #fde68a, var(--accent));
+    color: #422006; font-family: inherit; font-weight: bold;
+    box-shadow: 0 4px 0 #b45309; transition: transform .1s;
+  }
+  .level:active { transform: translateY(3px); box-shadow: 0 1px 0 #b45309; }
+  .level .num { font-size: .8rem; opacity: .8; }
+  .level .table { font-size: 1.6rem; display: block; margin: 2px 0; }
+  .level .stars { font-size: 1rem; letter-spacing: 1px; }
+  .level.locked { background: #e5e7eb; color: var(--locked); box-shadow: 0 4px 0 #d1d5db; cursor: not-allowed; }
+  .level.boss { background: linear-gradient(160deg, #c4b5fd, #8b5cf6); color: #fff; box-shadow: 0 4px 0 #5b21b6; }
+  .level.boss.locked { background: #e5e7eb; color: var(--locked); box-shadow: 0 4px 0 #d1d5db; }
+  .footer-row { display: flex; justify-content: center; margin-top: 16px; }
+  .link-btn { background: none; border: none; color: var(--muted); text-decoration: underline; cursor: pointer; font-family: inherit; }
+
+  /* Game */
+  .hud { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-weight: bold; }
+  .hearts { font-size: 1.3rem; letter-spacing: 2px; }
+  .progress { height: 12px; background: #e5e7eb; border-radius: 999px; overflow: hidden; margin-bottom: 16px; }
+  .progress > div { height: 100%; width: 0; background: linear-gradient(90deg, var(--good), #a3e635); transition: width .3s; }
+  .timer { height: 6px; background: #f3f4f6; border-radius: 999px; overflow: hidden; margin-bottom: 18px; }
+  .timer > div { height: 100%; width: 100%; background: var(--accent); }
+  .question { text-align: center; font-size: 3.2rem; font-weight: bold; margin: 6px 0 12px; }
+  .answer {
+    text-align: center; font-size: 2.4rem; min-height: 64px; border: 3px dashed #d1d5db;
+    border-radius: 14px; padding: 6px; margin-bottom: 8px; font-weight: bold;
+  }
+  .answer.good { border-color: var(--good); color: var(--good); border-style: solid; }
+  .answer.bad { border-color: var(--bad); color: var(--bad); border-style: solid; animation: shake .35s; }
+  .feedback { text-align: center; min-height: 24px; font-weight: bold; margin-bottom: 10px; }
+  .feedback.good { color: var(--good); }
+  .feedback.bad { color: var(--bad); }
+  .pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .pad button {
+    font-family: inherit; font-size: 1.6rem; font-weight: bold; padding: 14px 0;
+    border: none; border-radius: 14px; background: #eef2ff; color: #3730a3; cursor: pointer;
+    box-shadow: 0 4px 0 #c7d2fe;
+  }
+  .pad button:active { transform: translateY(3px); box-shadow: 0 1px 0 #c7d2fe; }
+  .pad .go { background: var(--good); color: #fff; box-shadow: 0 4px 0 #15803d; }
+  .pad .del { background: #fee2e2; color: #b91c1c; box-shadow: 0 4px 0 #fecaca; }
+  .combo { position: fixed; top: 30%; left: 50%; transform: translate(-50%, 0); font-size: 2rem; font-weight: bold; color: #fde047; text-shadow: 0 2px 8px rgba(0,0,0,.5); pointer-events: none; animation: pop 1s forwards; }
+
+  /* Results */
+  .result { text-align: center; }
+  .result h2 { margin: 0 0 6px; font-size: 2rem; }
+  .big-stars { font-size: 3rem; letter-spacing: 6px; margin: 8px 0; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 14px 0; }
+  .stat { background: #f3f4f6; border-radius: 12px; padding: 10px 4px; }
+  .stat b { display: block; font-size: 1.4rem; }
+  .stat span { font-size: .8rem; color: var(--muted); }
+  .missed { text-align: left; background: #fef2f2; border-radius: 12px; padding: 10px 14px; margin-bottom: 12px; }
+  .missed h3 { margin: 0 0 6px; font-size: 1rem; color: #b91c1c; }
+  .missed ul { margin: 0; padding-left: 18px; }
+  .btn-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .btn { font-family: inherit; font-weight: bold; font-size: 1.05rem; border: none; border-radius: 12px; padding: 12px 18px; cursor: pointer; }
+  .btn.primary { background: var(--accent); color: #422006; box-shadow: 0 4px 0 #b45309; }
+  .btn.secondary { background: #e5e7eb; color: var(--ink); box-shadow: 0 4px 0 #9ca3af; }
+
+  .confetti { position: fixed; top: -10px; width: 10px; height: 14px; pointer-events: none; animation: fall linear forwards; }
+
+  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+  @keyframes pop { 0% { opacity: 0; transform: translate(-50%, 20px) scale(.6); } 30% { opacity: 1; transform: translate(-50%, 0) scale(1.2); } 100% { opacity: 0; transform: translate(-50%, -40px) scale(1); } }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+
+  @media (max-width: 380px) {
+    .question { font-size: 2.6rem; }
+    .levels { gap: 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>✖️ Times Table Quest</h1>
+    <span class="pill" id="totalStars">⭐ 0</span>
+  </header>
+
+  <!-- Level map -->
+  <section id="mapScreen" class="card">
+    <p class="intro">Answer 10 facts per level. Get 8 right to unlock the next level. Answer fast for bonus points!</p>
+    <div class="levels" id="levels"></div>
+    <div class="footer-row"><button class="link-btn" id="resetBtn">Reset progress</button></div>
+  </section>
+
+  <!-- Game -->
+  <section id="gameScreen" class="card hidden">
+    <div class="hud">
+      <span id="levelLabel">Level 1</span>
+      <span class="hearts" id="hearts"></span>
+      <span id="score">0 pts</span>
+    </div>
+    <div class="progress"><div id="progressBar"></div></div>
+    <div class="timer"><div id="timerBar"></div></div>
+    <div class="question" id="question">5 × 3</div>
+    <div class="answer" id="answer"></div>
+    <div class="feedback" id="feedback"></div>
+    <div class="pad" id="pad"></div>
+  </section>
+
+  <!-- Results -->
+  <section id="resultScreen" class="card result hidden">
+    <h2 id="resultTitle">Level Complete!</h2>
+    <div class="big-stars" id="resultStars"></div>
+    <div class="stats">
+      <div class="stat"><b id="statCorrect">0/10</b><span>correct</span></div>
+      <div class="stat"><b id="statScore">0</b><span>points</span></div>
+      <div class="stat"><b id="statStreak">0</b><span>best streak</span></div>
+    </div>
+    <div class="missed hidden" id="missed"><h3>Practice these:</h3><ul id="missedList"></ul></div>
+    <div class="btn-row">
+      <button class="btn secondary" id="mapBtn">Level Map</button>
+      <button class="btn secondary" id="retryBtn">Try Again</button>
+      <button class="btn primary" id="nextBtn">Next Level ▶</button>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+  // Level order: 5s first, then 10s, then the rest of the 1–12 tables, ending with a mixed boss level.
+  const LEVELS = [
+    { table: 5 },  { table: 10 }, { table: 2 },  { table: 11 },
+    { table: 3 },  { table: 4 },  { table: 9 },  { table: 6 },
+    { table: 7 },  { table: 8 },  { table: 12 }, { table: 1 },
+    { table: 'mix', name: 'Boss' }
+  ];
+  const QUESTIONS_PER_LEVEL = 10;
+  const PASS_SCORE = 8;
+  const LIVES = 3;
+  const TIME_PER_Q = 10; // seconds for speed bonus
+  const STORAGE_KEY = 'ttq-progress-v1';
+
+  const $ = id => document.getElementById(id);
+
+  // ---------- Progress persistence ----------
+  function loadProgress() {
+    try {
+      const p = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (p && Array.isArray(p.stars)) return p;
+    } catch (e) {}
+    return { stars: LEVELS.map(() => 0), best: LEVELS.map(() => 0) };
+  }
+  function saveProgress() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); } catch (e) {}
+  }
+  let progress = loadProgress();
+  while (progress.stars.length < LEVELS.length) { progress.stars.push(0); progress.best.push(0); }
+
+  const isUnlocked = i => i === 0 || progress.stars[i - 1] > 0;
+  const starStr = n => '★'.repeat(n) + '☆'.repeat(3 - n);
+
+  // ---------- Screens ----------
+  function show(screen) {
+    for (const id of ['mapScreen', 'gameScreen', 'resultScreen']) $(id).classList.toggle('hidden', id !== screen);
+  }
+
+  function updateTotalStars() {
+    const total = progress.stars.reduce((a, b) => a + b, 0);
+    $('totalStars').textContent = `⭐ ${total} / ${LEVELS.length * 3}`;
+  }
+
+  function renderMap() {
+    updateTotalStars();
+    const wrap = $('levels');
+    wrap.innerHTML = '';
+    LEVELS.forEach((lv, i) => {
+      const b = document.createElement('button');
+      const unlocked = isUnlocked(i);
+      b.className = 'level' + (lv.table === 'mix' ? ' boss' : '') + (unlocked ? '' : ' locked');
+      const label = lv.table === 'mix' ? '👑 Mix' : `×${lv.table}`;
+      b.innerHTML = `<span class="num">Level ${i + 1}</span><span class="table">${unlocked ? label : '🔒'}</span><span class="stars">${starStr(progress.stars[i])}</span>`;
+      b.setAttribute('aria-label', `Level ${i + 1}, ${lv.table === 'mix' ? 'mixed facts' : 'multiples of ' + lv.table}${unlocked ? '' : ', locked'}`);
+      if (unlocked) b.onclick = () => startLevel(i);
+      wrap.appendChild(b);
+    });
+    show('mapScreen');
+  }
+
+  // ---------- Game state ----------
+  let state = null;
+  let timerId = null;
+
+  function shuffle(a) {
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  }
+
+  function buildQuestions(table) {
+    let facts;
+    if (table === 'mix') {
+      facts = [];
+      while (facts.length < QUESTIONS_PER_LEVEL) {
+        const a = 1 + Math.floor(Math.random() * 12), b = 1 + Math.floor(Math.random() * 12);
+        facts.push([a, b]);
+      }
+      return facts;
+    }
+    // Pick 10 distinct multipliers from 1–12, randomly swap order (5×3 vs 3×5)
+    const nums = shuffle([...Array(12)].map((_, i) => i + 1)).slice(0, QUESTIONS_PER_LEVEL);
+    return nums.map(n => (Math.random() < 0.5 ? [table, n] : [n, table]));
+  }
+
+  function startLevel(i) {
+    state = {
+      level: i,
+      questions: buildQuestions(LEVELS[i].table),
+      idx: 0, correct: 0, score: 0, streak: 0, bestStreak: 0,
+      lives: LIVES, input: '', missed: [], locked: false, qStart: 0
+    };
+    $('levelLabel').textContent = LEVELS[i].table === 'mix' ? `Level ${i + 1} 👑` : `Level ${i + 1} · ×${LEVELS[i].table}`;
+    show('gameScreen');
+    nextQuestion();
+  }
+
+  function renderHud() {
+    $('hearts').textContent = '❤️'.repeat(state.lives) + '🤍'.repeat(LIVES - state.lives);
+    $('score').textContent = `${state.score} pts`;
+    $('progressBar').style.width = `${(state.idx / QUESTIONS_PER_LEVEL) * 100}%`;
+  }
+
+  function nextQuestion() {
+    if (state.idx >= QUESTIONS_PER_LEVEL || state.lives <= 0) return finishLevel();
+    const [a, b] = state.questions[state.idx];
+    $('question').textContent = `${a} × ${b}`;
+    state.input = '';
+    state.locked = false;
+    $('answer').textContent = '';
+    $('answer').className = 'answer';
+    $('feedback').textContent = '';
+    $('feedback').className = 'feedback';
+    renderHud();
+    startTimer();
+  }
+
+  function startTimer() {
+    clearInterval(timerId);
+    state.qStart = performance.now();
+    const bar = $('timerBar');
+    timerId = setInterval(() => {
+      const elapsed = (performance.now() - state.qStart) / 1000;
+      const frac = Math.max(0, 1 - elapsed / TIME_PER_Q);
+      bar.style.width = `${frac * 100}%`;
+      bar.style.background = frac > 0.5 ? 'var(--accent)' : frac > 0.2 ? '#fb923c' : 'var(--bad)';
+    }, 50);
+  }
+
+  function press(key) {
+    if (!state || state.locked) return;
+    if (key === 'del') state.input = state.input.slice(0, -1);
+    else if (key === 'go') return submit();
+    else if (state.input.length < 3) state.input += key;
+    $('answer').textContent = state.input;
+  }
+
+  function submit() {
+    if (state.input === '') return;
+    state.locked = true;
+    clearInterval(timerId);
+    const [a, b] = state.questions[state.idx];
+    const right = a * b;
+    const elapsed = (performance.now() - state.qStart) / 1000;
+    const ans = $('answer'), fb = $('feedback');
+
+    if (Number(state.input) === right) {
+      state.correct++;
+      state.streak++;
+      state.bestStreak = Math.max(state.bestStreak, state.streak);
+      const speedBonus = Math.max(0, Math.round((TIME_PER_Q - elapsed) * 5));
+      const streakBonus = Math.min(state.streak - 1, 5) * 10;
+      const pts = 100 + speedBonus + streakBonus;
+      state.score += pts;
+      ans.className = 'answer good';
+      fb.className = 'feedback good';
+      fb.textContent = `${pick(['Great!', 'Awesome!', 'Nice!', 'You got it!', 'Super!'])} +${pts}`;
+      if (state.streak >= 3) combo(`🔥 ${state.streak} in a row!`);
+    } else {
+      state.streak = 0;
+      state.lives--;
+      state.missed.push(`${a} × ${b} = ${right}`);
+      ans.className = 'answer bad';
+      fb.className = 'feedback bad';
+      fb.textContent = `Oops! ${a} × ${b} = ${right}`;
+    }
+    state.idx++;
+    renderHud();
+    setTimeout(nextQuestion, Number(state.input) === right ? 700 : 1600);
+  }
+
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  function combo(text) {
+    const el = document.createElement('div');
+    el.className = 'combo';
+    el.textContent = text;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1000);
+  }
+
+  function confetti() {
+    const colors = ['#f59e0b', '#22c55e', '#3b82f6', '#ec4899', '#a855f7', '#facc15'];
+    for (let i = 0; i < 80; i++) {
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.left = Math.random() * 100 + 'vw';
+      c.style.background = pick(colors);
+      c.style.animationDuration = 1.5 + Math.random() * 2 + 's';
+      c.style.animationDelay = Math.random() * 0.5 + 's';
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 4500);
+    }
+  }
+
+  function finishLevel() {
+    clearInterval(timerId);
+    const i = state.level;
+    const passed = state.correct >= PASS_SCORE && state.lives > 0;
+    let stars = 0;
+    if (passed) stars = state.correct === 10 ? (state.score >= 1600 ? 3 : 2) : 1;
+
+    const wasLocked = i + 1 < LEVELS.length && !isUnlocked(i + 1);
+    progress.stars[i] = Math.max(progress.stars[i], stars);
+    progress.best[i] = Math.max(progress.best[i], state.score);
+    saveProgress();
+    updateTotalStars();
+
+    $('resultTitle').textContent = !passed
+      ? (state.lives <= 0 ? 'Out of hearts! 💔' : 'So close! Try again 💪')
+      : i === LEVELS.length - 1 ? '👑 You beat the Boss!'
+      : wasLocked ? '🎉 New level unlocked!' : 'Level Complete!';
+    $('resultStars').textContent = starStr(stars);
+    $('statCorrect').textContent = `${state.correct}/${QUESTIONS_PER_LEVEL}`;
+    $('statScore').textContent = state.score;
+    $('statStreak').textContent = state.bestStreak;
+
+    $('missed').classList.toggle('hidden', state.missed.length === 0);
+    $('missedList').innerHTML = state.missed.map(m => `<li>${m}</li>`).join('');
+
+    const hasNext = i + 1 < LEVELS.length && isUnlocked(i + 1);
+    $('nextBtn').classList.toggle('hidden', !hasNext);
+    show('resultScreen');
+    if (passed) confetti();
+  }
+
+  // ---------- Input wiring ----------
+  const keys = ['1','2','3','4','5','6','7','8','9','del','0','go'];
+  keys.forEach(k => {
+    const b = document.createElement('button');
+    b.textContent = k === 'del' ? '⌫' : k === 'go' ? '✔' : k;
+    if (k === 'del') b.className = 'del';
+    if (k === 'go') b.className = 'go';
+    b.setAttribute('aria-label', k === 'del' ? 'Delete' : k === 'go' ? 'Submit' : k);
+    b.onclick = () => press(k);
+    $('pad').appendChild(b);
+  });
+
+  document.addEventListener('keydown', e => {
+    if ($('gameScreen').classList.contains('hidden')) return;
+    if (/^[0-9]$/.test(e.key)) press(e.key);
+    else if (e.key === 'Backspace') press('del');
+    else if (e.key === 'Enter') press('go');
+    else if (e.key === 'Escape') { clearInterval(timerId); renderMap(); }
+  });
+
+  $('mapBtn').onclick = renderMap;
+  $('retryBtn').onclick = () => startLevel(state.level);
+  $('nextBtn').onclick = () => startLevel(state.level + 1);
+  $('resetBtn').onclick = () => {
+    if (confirm('Reset all stars and locked levels?')) {
+      progress = { stars: LEVELS.map(() => 0), best: LEVELS.map(() => 0) };
+      saveProgress();
+      renderMap();
+    }
+  };
+
+  renderMap();
+})();
+</script>
+</body>
+</html>
