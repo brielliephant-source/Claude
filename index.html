@@ -17,6 +17,10 @@
     --locked: #9ca3af;
     --radius: 18px;
   }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #0f0d2e; --bg2: #26236b; }
+  }
+  :root[data-theme="dark"] { --bg: #0f0d2e; --bg2: #26236b; }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
   body {
@@ -405,7 +409,16 @@
   $('retryBtn').onclick = () => startLevel(state.level);
   $('nextBtn').onclick = () => startLevel(state.level + 1);
   $('resetBtn').onclick = () => {
-    if (confirm('Reset all stars and locked levels?')) {
+    const btn = $('resetBtn');
+    if (btn.dataset.armed !== '1') {
+      btn.dataset.armed = '1';
+      btn.textContent = 'Tap again to reset all stars';
+      setTimeout(() => { btn.dataset.armed = ''; btn.textContent = 'Reset progress'; }, 3000);
+      return;
+    }
+    btn.dataset.armed = '';
+    btn.textContent = 'Reset progress';
+    {
       progress = { stars: LEVELS.map(() => 0), best: LEVELS.map(() => 0) };
       saveProgress();
       renderMap();
