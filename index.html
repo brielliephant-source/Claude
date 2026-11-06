@@ -151,23 +151,32 @@
   .typed { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,.92); color: #0c2d48; font-weight: bold; font-size: 1.4rem; border-radius: 10px; padding: 2px 14px; z-index: 7; min-width: 60px; text-align: center; }
   .typed:empty { display: none; }
 
-  /* Mini-game: Bubble Pop */
-  .arena {
-    position: relative; height: clamp(280px, 46vh, 380px); border-radius: 16px; overflow: hidden;
-    background: linear-gradient(180deg, var(--sea-top), var(--sea-bot)); touch-action: manipulation;
+  /* Mini-game: Asteroid Blaster */
+  .space {
+    position: relative; height: clamp(280px, 46vh, 380px); border-radius: 16px; overflow: hidden; touch-action: manipulation;
+    background: radial-gradient(circle at 15% 25%, rgba(255,255,255,.8) 0 1px, transparent 2px) 0 0 / 47px 53px,
+                radial-gradient(circle at 60% 70%, rgba(255,255,255,.5) 0 1px, transparent 2px) 0 0 / 71px 61px,
+                radial-gradient(circle at 40% 40%, rgba(255,255,255,.35) 0 1px, transparent 1.5px) 0 0 / 29px 37px,
+                #05060f;
   }
-  .arena::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 8px; background: repeating-linear-gradient(90deg, rgba(255,255,255,.5) 0 14px, transparent 14px 28px); }
-  .bubble {
-    position: absolute; bottom: 0; width: clamp(58px, 17vw, 78px); height: clamp(58px, 17vw, 78px);
-    border-radius: 50%; border: 2px solid rgba(255,255,255,.85); cursor: pointer;
-    background: radial-gradient(circle at 30% 28%, rgba(255,255,255,.95) 0 10%, rgba(255,255,255,.35) 22%, rgba(186,230,253,.25) 60%, rgba(255,255,255,.55) 100%);
-    color: #0c2d48; font-size: clamp(1.2rem, 5vw, 1.6rem); font-weight: bold; text-shadow: 0 1px 0 rgba(255,255,255,.8);
-    transform: translate(-50%, 100px); will-change: transform; padding: 0;
+  .ship { position: absolute; left: 50%; top: 50%; width: 42px; height: 42px; transform: translate(-50%, -50%); transition: transform .12s; z-index: 3; pointer-events: none; filter: drop-shadow(0 0 4px rgba(255,255,255,.6)); }
+  .ship svg { width: 100%; height: 100%; display: block; }
+  .ship.hit { animation: shieldHit .5s; }
+  .rock {
+    position: absolute; left: 0; top: 0; width: clamp(60px, 17vw, 76px); height: clamp(60px, 17vw, 76px);
+    border: none; background: none; padding: 0; cursor: pointer; z-index: 2; will-change: transform;
   }
-  .bubble.pop { animation: popOut .3s forwards; pointer-events: none; }
-  .bubble.fade { opacity: .25; pointer-events: none; transition: opacity .2s; }
-  .bubble.wrongb { background: radial-gradient(circle at 30% 28%, #fff 0 10%, #fca5a5 40%, #ef4444 100%); color: #fff; text-shadow: none; }
-  .bubble.reveal { background: radial-gradient(circle at 30% 28%, #fff 0 10%, #bbf7d0 40%, #22c55e 100%); color: #052e16; box-shadow: 0 0 0 6px rgba(34,197,94,.45); }
+  .rock svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .rock span { position: relative; color: #fff; font-weight: bold; font-size: clamp(1.15rem, 5vw, 1.5rem); text-shadow: 0 0 6px #000, 0 0 2px #000; }
+  .rock.boom svg { animation: boom .35s forwards; }
+  .rock.boom span { animation: boom .35s forwards; }
+  .rock.fade { opacity: .25; pointer-events: none; transition: opacity .2s; }
+  .rock.wrong polygon { stroke: var(--bad); fill: rgba(239,68,68,.35); }
+  .rock.reveal polygon { stroke: var(--good); fill: rgba(34,197,94,.4); }
+  .rock.reveal { filter: drop-shadow(0 0 8px rgba(34,197,94,.9)); }
+  .laser { position: absolute; left: 0; top: 0; width: 6px; height: 6px; border-radius: 50%; background: #fde047; box-shadow: 0 0 8px 3px rgba(253,224,71,.8); z-index: 4; pointer-events: none; }
+  @keyframes boom { to { transform: scale(1.8); opacity: 0; } }
+  @keyframes shieldHit { 0%,100% { filter: drop-shadow(0 0 4px rgba(255,255,255,.6)); } 50% { filter: drop-shadow(0 0 14px #ef4444) drop-shadow(0 0 6px #ef4444); } }
 
   /* Mini-game: Mole Whack */
   .moles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 12px; border-radius: 16px; background: var(--grass); touch-action: manipulation; }
@@ -280,7 +289,6 @@
   @keyframes bump { 50% { transform: scale(1.25); } }
   @keyframes bounce { 30% { transform: translateY(-14px) scale(1.1); } 60% { transform: translateY(0); } }
   @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-  @keyframes popOut { to { transform: var(--pos) scale(1.6); opacity: 0; } }
   @keyframes burst { to { transform: translate(var(--dx), var(--dy)) scale(.2); opacity: 0; } }
   @keyframes floatUp { to { transform: translateY(-60px); opacity: 0; } }
   @keyframes pop { 0% { opacity: 0; transform: translate(-50%, 20px) scale(.6); } 25% { opacity: 1; transform: translate(-50%, 0) scale(1.15); } 100% { opacity: 0; transform: translate(-50%, -40px) scale(1); } }
@@ -415,9 +423,9 @@
   // Level order: 5s first, then 10s, then the rest of the 1–12 tables, ending with a mixed boss level.
   const LEVELS = [5, 10, 2, 11, 3, 4, 9, 6, 7, 8, 12, 1, 'mix'];
   // Every level is played as these stages, in order. Each stage is a different mini-game.
-  const STAGE_ORDER = ['bubble', 'mole', 'kick', 'rocket'];
+  const STAGE_ORDER = ['asteroid', 'mole', 'kick', 'rocket'];
   const STAGES = {
-    bubble: { icon: '🫧', name: 'Bubble Pop',   desc: 'Pop the bubble with the answer before it floats away!', hint: 'Tap the right bubble — or type the answer and press Enter.' },
+    asteroid: { icon: '☄️', name: 'Asteroid Blaster', desc: 'Asteroids with numbers are drifting through space. Blast the one with the answer before the shot clock runs out!', hint: 'Tap the right asteroid — or type the answer and press Enter.' },
     mole:   { icon: '🔨', name: 'Mole Bonk',    desc: 'Moles pop up holding numbers. Bonk the one with the answer — wrong moles cost a heart!', hint: 'Tap the mole with the answer — or type it and press Enter.' },
     kick:   { icon: '⚽', name: 'Penalty Kicks', desc: 'Shoot at the target with the answer before the shot clock runs out. Miss and the goalie saves it!', hint: 'Tap the right target — or type the answer and press Enter.' },
     rocket: { icon: '🚀', name: 'Rocket Race',  desc: 'Every right answer blasts your rocket forward. Beat the alien to the finish line!', hint: 'Type the answer — it goes in by itself.' }
@@ -699,10 +707,10 @@
     return out;
   }
   function planFacts(t) {
-    if (t === 'mix') return { bubble: mixFacts(8), mole: mixFacts(7), kick: mixFacts(6) };
+    if (t === 'mix') return { asteroid: mixFacts(8), mole: mixFacts(7), kick: mixFacts(6) };
     const nums = shuffle(range(1, 12));
     return {
-      bubble: nums.slice(0, 6).map(n => orient(t, n)),
+      asteroid: nums.slice(0, 6).map(n => orient(t, n)),
       mole: nums.slice(6).map(n => orient(t, n)),
       kick: shuffle(range(1, 12)).slice(0, 6).map(n => orient(t, n))
     };
@@ -800,83 +808,140 @@
   // ---------- Mini-games ----------
   const MINI = {};
 
-  // 🫧 Bubble Pop: answers float up; tap the right one before it escapes.
-  MINI.bubble = facts => {
-    const arena = mk('div', 'arena'), typedEl = mk('div', 'typed');
-    arena.appendChild(typedEl);
-    $('stage').appendChild(arena);
+  // ☄️ Asteroid Blaster: numbered asteroids drift through space (wrapping at the edges).
+  // Tap the one with the answer and your ship turns and blasts it before the shot clock runs out.
+  MINI.asteroid = facts => {
+    const SHIP_SVG = '<svg viewBox="0 0 40 40" aria-hidden="true"><polygon points="20,3 34,36 20,28 6,36" fill="rgba(255,255,255,.08)" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/></svg>';
+    const space = mk('div', 'space', `<div class="ship">${SHIP_SVG}</div><div class="shotclock"><div></div></div>`);
+    const typedEl = mk('div', 'typed');
+    space.appendChild(typedEl);
+    $('stage').appendChild(space);
+    const ship = space.querySelector('.ship'), clock = space.querySelector('.shotclock > div');
     const queue = facts.slice(), total = queue.length;
-    let done = 0, bubbles = [], frozen = true, fact = null, answer = 0, qStart = 0, raf = 0, lastT = 0, typed = '';
+    let done = 0, rocks = [], bullets = [], frozen = true, fact = null, answer = 0, qStart = 0, limit = 8000, raf = 0, lastT = 0, typed = '';
     const setTyped = v => { typed = v; typedEl.textContent = v; };
 
+    function rockSVG() {
+      const pts = [];
+      for (let i = 0; i < 11; i++) {
+        const ang = (i / 11) * Math.PI * 2, r = 38 + Math.random() * 10;
+        pts.push(`${(50 + Math.cos(ang) * r).toFixed(1)},${(50 + Math.sin(ang) * r).toFixed(1)}`);
+      }
+      return `<svg viewBox="0 0 100 100" aria-hidden="true"><polygon points="${pts.join(' ')}" fill="rgba(148,163,184,.18)" stroke="#e2e8f0" stroke-width="3.5" stroke-linejoin="round"/></svg>`;
+    }
     function next() {
       if (!queue.length) return stageDone();
       fact = queue[0]; answer = fact[0] * fact[1];
       setQuestion(`${fact[0]} × ${fact[1]}`);
       setTyped('');
-      bubbles.forEach(b => b.el.remove());
-      bubbles = choicesFor(fact[0], fact[1]).map((v, i) => {
-        const el = mk('button', 'bubble'); el.textContent = v;
-        el.style.left = (12.5 + 25 * i) + '%';
-        el.setAttribute('aria-label', `Answer ${v}`);
-        const bub = { el, val: v, y: -90 - Math.random() * 80, phase: Math.random() * 6.28 };
-        el.addEventListener('pointerdown', e => { e.preventDefault(); tap(bub); });
-        arena.appendChild(el);
-        return bub;
+      rocks.forEach(r => r.el.remove()); bullets.forEach(b => b.el.remove()); bullets = [];
+      const W = space.clientWidth, H = space.clientHeight;
+      const speed = 26 + run.streak * 4 + (run.t === 'mix' ? 10 : 0);
+      rocks = choicesFor(fact[0], fact[1]).map((v, i) => {
+        const el = mk('button', 'rock', `${rockSVG()}<span>${v}</span>`);
+        el.setAttribute('aria-label', `Asteroid ${v}`);
+        space.appendChild(el);
+        // start in one of the four corners-ish zones, away from the ship in the middle
+        const corner = [[.18, .2], [.82, .2], [.18, .8], [.82, .8]][i];
+        const ang = Math.random() * Math.PI * 2;
+        const rock = {
+          el, val: v, svg: el.querySelector('svg'), r: el.offsetWidth / 2,
+          x: W * corner[0] + (Math.random() - .5) * 30, y: H * corner[1] + (Math.random() - .5) * 30,
+          vx: Math.cos(ang) * speed, vy: Math.sin(ang) * speed, rot: rand(360), vr: (Math.random() - .5) * 60, dead: false
+        };
+        el.addEventListener('pointerdown', e => { e.preventDefault(); shoot(rock); });
+        return rock;
       });
+      ship.style.transform = 'translate(-50%, -50%) rotate(0deg)';
+      ship.classList.remove('hit');
+      limit = Math.max(4000, 9000 - run.streak * 350 - (run.t === 'mix' ? 1500 : 0));
       qStart = performance.now();
       frozen = false;
     }
-    const crossTime = () => Math.max(2.6, 7.5 - run.streak * 0.35 - (run.t === 'mix' ? 1.2 : 0));
     function loop(t) {
       raf = requestAnimationFrame(loop);
       const dt = lastT ? Math.min(.05, (t - lastT) / 1000) : 0;
       lastT = t;
-      if (frozen) return;
-      const H = arena.clientHeight, speed = H / crossTime();
-      for (const b of bubbles) {
-        b.y += speed * dt; b.phase += dt * 2.2;
-        b.pos = `translate(calc(-50% + ${(Math.sin(b.phase) * 7).toFixed(1)}px), ${(-b.y).toFixed(1)}px)`;
-        b.el.style.transform = b.pos;
+      const W = space.clientWidth, H = space.clientHeight;
+      for (const r of rocks) {
+        if (r.dead) continue;
+        r.x += r.vx * dt; r.y += r.vy * dt; r.rot += r.vr * dt;
+        if (r.x < -r.r) r.x = W + r.r; else if (r.x > W + r.r) r.x = -r.r;
+        if (r.y < -r.r) r.y = H + r.r; else if (r.y > H + r.r) r.y = -r.r;
+        r.el.style.transform = `translate(${(r.x - r.r).toFixed(1)}px, ${(r.y - r.r).toFixed(1)}px)`;
+        r.svg.style.transform = `rotate(${r.rot.toFixed(1)}deg)`;
       }
-      const right = bubbles.find(b => b.val === answer);
-      if (right && right.y > H) escaped();
+      for (const b of bullets) {
+        const dx = b.target.x - b.x, dy = b.target.y - b.y, d = Math.hypot(dx, dy);
+        const step = 720 * dt;
+        if (d <= Math.max(step, 14)) { b.el.remove(); b.done = true; b.onHit(); continue; }
+        b.x += dx / d * step; b.y += dy / d * step;
+        b.el.style.transform = `translate(${b.x - 3}px, ${b.y - 3}px)`;
+      }
+      bullets = bullets.filter(b => !b.done);
+      if (!frozen) {
+        const left = 1 - (performance.now() - qStart) / limit;
+        clock.style.width = Math.max(0, left * 100) + '%';
+        if (left <= 0) tooSlow();
+      }
+    }
+    function fire(rock, onHit) {
+      const W = space.clientWidth, H = space.clientHeight;
+      const deg = Math.atan2(rock.y - H / 2, rock.x - W / 2) * 180 / Math.PI + 90;
+      ship.style.transform = `translate(-50%, -50%) rotate(${deg.toFixed(1)}deg)`;
+      const el = mk('div', 'laser');
+      space.appendChild(el);
+      bullets.push({ el, x: W / 2, y: H / 2, target: rock, onHit });
+      sound('zoom');
     }
     function requeue() { const f = queue.shift(); queue.splice(Math.min(2, queue.length), 0, f); }
-    function tap(b) {
-      if (frozen) return;
+    function shoot(rock) {
+      if (frozen || rock.dead) return;
       frozen = true;
-      if (b && b.val === answer) {
-        gotIt(fact[0], fact[1], performance.now() - qStart, b.el);
-        b.el.style.setProperty('--pos', b.pos || 'translate(-50%, 0)');
-        b.el.classList.add('pop');
-        bubbles.forEach(o => o !== b && o.el.classList.add('fade'));
-        sound('pop');
-        setQuestion(`${fact[0]} × ${fact[1]} = ${answer}`, 'good');
-        queue.shift(); done++; setProgress(done / total);
-        later(next, 520);
+      const ms = performance.now() - qStart;
+      if (rock.val === answer) {
+        fire(rock, () => {
+          rock.dead = true;
+          rock.el.classList.add('boom');
+          rocks.forEach(o => o !== rock && o.el.classList.add('fade'));
+          gotIt(fact[0], fact[1], ms, rock.el);
+          sound('bonk'); setTimeout(() => sound('pop'), 60);
+          setQuestion(`${fact[0]} × ${fact[1]} = ${answer}`, 'good');
+          queue.shift(); done++; setProgress(done / total);
+          later(next, 700);
+        });
       } else {
-        if (b) b.el.classList.add('wrongb');
-        const right = bubbles.find(o => o.val === answer);
-        if (right) right.el.classList.add('reveal');
-        bubbles.forEach(o => o !== b && o !== right && o.el.classList.add('fade'));
-        setQuestion(`${fact[0]} × ${fact[1]} = ${answer}`, 'bad');
-        const dead = missedIt(fact[0], fact[1], true);
-        requeue();
-        later(dead ? finishRun : next, 1500);
+        fire(rock, () => {
+          rock.el.classList.add('wrong');
+          const right = rocks.find(o => o.val === answer);
+          if (right) right.el.classList.add('reveal');
+          rocks.forEach(o => o !== rock && o !== right && o.el.classList.add('fade'));
+          ship.classList.add('hit');
+          setQuestion(`${fact[0]} × ${fact[1]} = ${answer}`, 'bad');
+          const dead = missedIt(fact[0], fact[1], true);
+          requeue();
+          later(dead ? finishRun : next, 1600);
+        });
       }
     }
-    function escaped() {
+    function tooSlow() {
       frozen = true;
+      const right = rocks.find(o => o.val === answer);
+      if (right) right.el.classList.add('reveal');
+      rocks.forEach(o => o !== right && o.el.classList.add('fade'));
       setQuestion(`Too slow! ${fact[0]} × ${fact[1]} = ${answer}`, 'bad small');
       missedIt(fact[0], fact[1], false);
       requeue();
-      later(next, 1500);
+      later(next, 1600);
     }
     keyHandler = e => {
       if (/^[0-9]$/.test(e.key) && typed.length < 3) setTyped(typed + e.key);
       else if (e.key === 'Backspace') setTyped(typed.slice(0, -1));
-      else if (e.key === 'Enter' && typed && !frozen) tap(bubbles.find(b => String(b.val) === typed) || null);
+      else if (e.key === 'Enter' && typed && !frozen) {
+        const r = rocks.find(x => !x.dead && String(x.val) === typed);
+        setTyped('');
+        if (r) shoot(r);
+      }
     };
     cleanup = () => cancelAnimationFrame(raf);
     raf = requestAnimationFrame(loop);
@@ -1100,7 +1165,7 @@
     $('stage').append(track, ansEl, pad);
     const me = track.querySelector('#meRacer'), rival = track.querySelector('#rivalRacer');
     const perAnswer = run.t === 'mix' ? 4.2 : Math.max(3.6, 5.5 - run.level * 0.12); // seconds the alien takes per step
-    let pos = 0, rivalStart = 0, fact = null, input = '', locked = true, qStart = 0, over = false;
+    let pos = 0, rivalStart = 0, fact = null, input = '', locked = true, qStart = 0, over = true; // over until the countdown finishes
     const place = (el, frac) => { el.style.left = `calc((100% - 84px) * ${Math.min(1, frac)})`; };
 
     function nextFact() {
