@@ -187,16 +187,31 @@
   .hole.oops .mole { animation: shake .3s; }
   .hammer { position: absolute; font-size: 2.2rem; pointer-events: none; z-index: 8; animation: hammer .25s forwards; }
 
-  /* Mini-game: Memory Match */
-  .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .mcard {
-    aspect-ratio: 3 / 4; border: none; border-radius: 12px; font-weight: bold; font-size: clamp(1rem, 4.6vw, 1.45rem);
-    cursor: pointer; background: linear-gradient(135deg, #a78bfa, #6366f1); color: #fff; box-shadow: 0 4px 0 #4338ca; padding: 0;
+  /* Mini-game: Penalty Kicks */
+  .pitch {
+    position: relative; height: clamp(280px, 46vh, 380px); border-radius: 16px; overflow: hidden; touch-action: manipulation;
+    background: repeating-linear-gradient(180deg, var(--grass) 0 34px, var(--grass-dark) 34px 68px);
   }
-  .mcard.flip { animation: flip .25s; }
-  .mcard.open { background: var(--pad); color: var(--pad-ink); box-shadow: 0 4px 0 var(--pad-edge); }
-  .mcard.matched { background: var(--good); color: #fff; box-shadow: 0 4px 0 #15803d; cursor: default; }
-  .mcard.nomatch { background: #fecaca; color: #7f1d1d; box-shadow: 0 4px 0 #fca5a5; animation: shake .35s; }
+  .goal {
+    position: absolute; left: 5%; right: 5%; top: 8%; height: 44%; border: 6px solid #fff; border-bottom: none; border-radius: 6px 6px 0 0;
+    background: repeating-linear-gradient(45deg, rgba(255,255,255,.3) 0 2px, transparent 2px 14px), repeating-linear-gradient(-45deg, rgba(255,255,255,.3) 0 2px, transparent 2px 14px), rgba(0,0,0,.15);
+  }
+  .pitch.netshake .goal { animation: shake .3s; }
+  .target {
+    position: absolute; top: 30%; transform: translate(-50%, -50%); width: clamp(56px, 16vw, 72px); height: clamp(56px, 16vw, 72px);
+    border-radius: 50%; border: 5px solid var(--bad); background: #fff; color: #1f2937; cursor: pointer; z-index: 2; padding: 0;
+    font-size: clamp(1.1rem, 5vw, 1.5rem); font-weight: bold; box-shadow: 0 4px 0 rgba(0,0,0,.25);
+  }
+  .target.hit { background: var(--good); border-color: #15803d; color: #fff; }
+  .target.miss { background: var(--bad); border-color: #991b1b; color: #fff; }
+  .target.reveal { border-color: var(--good); box-shadow: 0 0 0 6px rgba(34,197,94,.6); }
+  .keeper { position: absolute; top: 47%; left: 50%; font-size: clamp(2.4rem, 10vw, 3.2rem); transform: translate(-50%, -50%); z-index: 3; transition: left .25s, top .25s, transform .25s; pointer-events: none; }
+  .ball { position: absolute; left: 50%; top: 84%; font-size: 2.4rem; transform: translate(-50%, -50%); z-index: 4; pointer-events: none; transition: left .35s ease-out, top .35s ease-out, transform .35s ease-out; }
+  .ball.noanim, .keeper.noanim { transition: none; }
+  .shotclock { position: absolute; left: 12px; right: 12px; bottom: 10px; height: 8px; background: rgba(0,0,0,.25); border-radius: 99px; overflow: hidden; }
+  .shotclock > div { height: 100%; width: 100%; background: #fde047; }
+  .shout { position: absolute; left: 50%; top: 64%; font-size: 2.2rem; font-weight: 900; color: #fff; text-shadow: 0 3px 0 rgba(0,0,0,.35); animation: shout .9s forwards; z-index: 6; pointer-events: none; white-space: nowrap; }
+  @keyframes shout { 0% { transform: translate(-50%, -50%) scale(.4); opacity: 0; } 25% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; } 100% { transform: translate(-50%, -90%) scale(1); opacity: 0; } }
 
   /* Mini-game: Rocket Race */
   .track {
@@ -272,7 +287,6 @@
   @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } }
   @keyframes toastIn { from { transform: translate(-50%, 30px); opacity: 0; } }
   @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
-  @keyframes flip { 50% { transform: scaleX(0); } }
   @keyframes squash { to { transform: scaleY(.4) translateY(40%); } }
   @keyframes hammer { from { transform: rotate(-60deg); } to { transform: rotate(10deg); } }
 </style>
@@ -377,6 +391,7 @@
     <p class="legend"><span><i style="background:var(--soft)"></i>Not yet</span><span><i style="background:#fde68a"></i>Learning</span><span><i style="background:var(--good)"></i>Mastered</span></p>
     <div class="fact-grid" id="factGrid"></div>
     <p class="facts-note">A fact is mastered when you get it right twice, once in under 3 seconds.</p>
+    <div class="btn-row"><button class="link-btn" id="resetFactsBtn">Reset facts</button></div>
   </section>
 </div>
 
@@ -400,11 +415,11 @@
   // Level order: 5s first, then 10s, then the rest of the 1–12 tables, ending with a mixed boss level.
   const LEVELS = [5, 10, 2, 11, 3, 4, 9, 6, 7, 8, 12, 1, 'mix'];
   // Every level is played as these stages, in order. Each stage is a different mini-game.
-  const STAGE_ORDER = ['bubble', 'mole', 'match', 'rocket'];
+  const STAGE_ORDER = ['bubble', 'mole', 'kick', 'rocket'];
   const STAGES = {
     bubble: { icon: '🫧', name: 'Bubble Pop',   desc: 'Pop the bubble with the answer before it floats away!', hint: 'Tap the right bubble — or type the answer and press Enter.' },
     mole:   { icon: '🔨', name: 'Mole Bonk',    desc: 'Moles pop up holding numbers. Bonk the one with the answer — wrong moles cost a heart!', hint: 'Tap the mole with the answer — or type it and press Enter.' },
-    match:  { icon: '🃏', name: 'Memory Match', desc: 'Flip two cards at a time. Match each fact with its answer!', hint: 'Find a fact card and its answer card.' },
+    kick:   { icon: '⚽', name: 'Penalty Kicks', desc: 'Shoot at the target with the answer before the shot clock runs out. Miss and the goalie saves it!', hint: 'Tap the right target — or type the answer and press Enter.' },
     rocket: { icon: '🚀', name: 'Rocket Race',  desc: 'Every right answer blasts your rocket forward. Beat the alien to the finish line!', hint: 'Type the answer — it goes in by itself.' }
   };
   const HEARTS = 5;
@@ -508,7 +523,6 @@
   const SOUNDS = {
     pop:   [[660, 990], .06, 'triangle', .15],
     bonk:  [[180, 120], .07, 'square', .12],
-    flip:  [[520], .04, 'triangle', .08],
     wrong: [[220, 150], .13, 'sawtooth', .07],
     miss:  [[330, 260], .12, 'sine', .1],
     coin:  [[988, 1319], .07, 'square', .05],
@@ -685,12 +699,12 @@
     return out;
   }
   function planFacts(t) {
-    if (t === 'mix') return { bubble: mixFacts(8), mole: mixFacts(7), match: mixFacts(6, true) };
+    if (t === 'mix') return { bubble: mixFacts(8), mole: mixFacts(7), kick: mixFacts(6) };
     const nums = shuffle(range(1, 12));
     return {
       bubble: nums.slice(0, 6).map(n => orient(t, n)),
       mole: nums.slice(6).map(n => orient(t, n)),
-      match: shuffle(range(1, 12)).slice(0, 6).map(n => orient(t, n))
+      kick: shuffle(range(1, 12)).slice(0, 6).map(n => orient(t, n))
     };
   }
 
@@ -958,57 +972,122 @@
     later(next, 300);
   };
 
-  // 🃏 Memory Match: flip cards to pair each fact with its answer.
-  MINI.match = facts => {
-    setQuestion('Match the pairs!', 'small');
-    const grid = mk('div', 'cards');
-    $('stage').appendChild(grid);
-    const cards = shuffle(facts.flatMap(([a, b], k) => [{ k, txt: `${a}×${b}` }, { k, txt: String(a * b) }]));
-    let open = [], matched = 0, flips = 0, lock = false;
-    cards.forEach(c => {
-      c.el = mk('button', 'mcard', '?');
-      c.el.setAttribute('aria-label', 'Hidden card');
-      c.el.addEventListener('pointerdown', e => { e.preventDefault(); flip(c); });
-      grid.appendChild(c.el);
+  // ⚽ Penalty Kicks: three targets in the goal; shoot at the one with the answer before the shot clock runs out.
+  MINI.kick = facts => {
+    const pitch = mk('div', 'pitch', '<div class="goal"></div><div class="keeper">🐻</div><div class="ball">⚽</div><div class="shotclock"><div></div></div>');
+    const typedEl = mk('div', 'typed');
+    pitch.appendChild(typedEl);
+    $('stage').appendChild(pitch);
+    const keeper = pitch.querySelector('.keeper'), ball = pitch.querySelector('.ball'), clock = pitch.querySelector('.shotclock > div');
+    const XS = [20, 50, 80];
+    const targets = XS.map(x => {
+      const el = mk('button', 'target');
+      el.style.left = x + '%';
+      pitch.appendChild(el);
+      const t = { el, x, val: 0 };
+      el.addEventListener('pointerdown', e => { e.preventDefault(); shoot(t); });
+      return t;
     });
-    function face(c, up) {
-      c.el.classList.remove('flip'); void c.el.offsetWidth; c.el.classList.add('flip');
-      setTimeout(() => { c.el.textContent = up ? c.txt : '?'; c.el.classList.toggle('open', up); }, 120);
+    const queue = facts.slice(), total = queue.length;
+    let done = 0, fact = null, answer = 0, frozen = true, qStart = 0, limit = 6000, typed = '', diving = false;
+    const setTyped = v => { typed = v; typedEl.textContent = v; };
+
+    function shout(text) {
+      const s = mk('div', 'shout'); s.textContent = text;
+      pitch.appendChild(s); setTimeout(() => s.remove(), 950);
     }
-    function flip(c) {
-      if (lock || c.done || open.includes(c)) return;
-      sound('flip');
-      face(c, true);
-      open.push(c);
-      if (open.length < 2) return;
-      flips++;
-      lock = true;
-      const [x, y] = open;
-      if (x.k === y.k) {
-        const [a, b] = facts[x.k];
+    function snap(el) { el.classList.add('noanim'); void el.offsetWidth; el.classList.remove('noanim'); }
+    function resetPlay() {
+      ball.classList.add('noanim'); keeper.classList.add('noanim');
+      ball.style.left = '50%'; ball.style.top = '84%'; ball.style.transform = 'translate(-50%, -50%)';
+      keeper.style.top = '47%'; keeper.style.transform = 'translate(-50%, -50%)';
+      snap(ball); snap(keeper);
+      diving = false;
+      pitch.classList.remove('netshake');
+      targets.forEach(t => { t.el.className = 'target'; });
+    }
+    function next() {
+      if (!queue.length) return stageDone();
+      fact = queue[0]; answer = fact[0] * fact[1];
+      setQuestion(`${fact[0]} × ${fact[1]}`);
+      setTyped('');
+      resetPlay();
+      choicesFor(fact[0], fact[1], 3).forEach((v, i) => {
+        targets[i].val = v; targets[i].el.textContent = v; targets[i].el.setAttribute('aria-label', `Shoot at ${v}`);
+      });
+      limit = Math.max(3500, 7000 - run.streak * 300 - (run.t === 'mix' ? 1000 : 0));
+      qStart = performance.now();
+      frozen = false;
+    }
+    function tick() {
+      const now = performance.now();
+      if (!diving) keeper.style.left = (50 + Math.sin(now / 450) * 16) + '%';
+      if (frozen) return;
+      const left = 1 - (now - qStart) / limit;
+      clock.style.width = Math.max(0, left * 100) + '%';
+      if (left <= 0) tooSlow();
+    }
+    function dive(x) {
+      diving = true;
+      keeper.style.left = x + '%'; keeper.style.top = '33%';
+      keeper.style.transform = `translate(-50%, -50%) rotate(${x < 50 ? -70 : x > 50 ? 70 : 0}deg)`;
+    }
+    function kickTo(t) {
+      ball.style.left = t.x + '%'; ball.style.top = '30%';
+      ball.style.transform = 'translate(-50%, -50%) scale(.6) rotate(540deg)';
+      sound('bonk');
+    }
+    function requeue() { const f = queue.shift(); queue.splice(Math.min(2, queue.length), 0, f); }
+    function shoot(t) {
+      if (frozen) return;
+      frozen = true;
+      const ms = performance.now() - qStart;
+      kickTo(t);
+      if (t.val === answer) {
+        later(() => dive(pick(XS.filter(x => x !== t.x))), 60);
         later(() => {
-          x.done = y.done = true;
-          x.el.classList.add('matched'); y.el.classList.add('matched');
-          gotIt(a, b, Infinity, y.el);
+          t.el.classList.add('hit'); pitch.classList.add('netshake');
+          shout('GOAL! ⚽');
+          gotIt(fact[0], fact[1], ms, t.el);
           sound('pop');
-          setQuestion(`${a} × ${b} = ${a * b}`, 'good');
-          matched++; setProgress(matched / facts.length);
-          open = []; lock = false;
-          if (matched === facts.length) {
-            if (flips <= facts.length + 2) { banner('🧠 Super memory! +20 🪙'); addCoins(20); run.coins += 20; }
-            later(stageDone, 1100);
-          }
-        }, 350);
+          setQuestion(`${fact[0]} × ${fact[1]} = ${answer}`, 'good');
+          queue.shift(); done++; setProgress(done / total);
+          later(next, 1000);
+        }, 380);
       } else {
-        later(() => { x.el.classList.add('nomatch'); y.el.classList.add('nomatch'); sound('miss'); }, 300);
+        later(() => dive(t.x), 60);
         later(() => {
-          [x, y].forEach(c => { c.el.classList.remove('nomatch'); face(c, false); });
-          open = []; lock = false;
-        }, 1100);
+          t.el.classList.add('miss');
+          const right = targets.find(o => o.val === answer); if (right) right.el.classList.add('reveal');
+          shout('SAVED! 🧤');
+          setQuestion(`${fact[0]} × ${fact[1]} = ${answer}`, 'bad');
+          const dead = missedIt(fact[0], fact[1], true);
+          requeue();
+          later(dead ? finishRun : next, 1700);
+        }, 380);
       }
-      $('hint').textContent = `Flips: ${flips} — match all ${facts.length} pairs in ${facts.length + 2} or fewer for a bonus!`;
     }
-    $('hint').textContent = `Match all ${facts.length} pairs in ${facts.length + 2} flips or fewer for a bonus!`;
+    function tooSlow() {
+      frozen = true;
+      const right = targets.find(o => o.val === answer); if (right) right.el.classList.add('reveal');
+      setQuestion(`Too slow! ${fact[0]} × ${fact[1]} = ${answer}`, 'bad small');
+      missedIt(fact[0], fact[1], false);
+      requeue();
+      later(next, 1600);
+    }
+    keyHandler = e => {
+      if (/^[0-9]$/.test(e.key) && typed.length < 3) setTyped(typed + e.key);
+      else if (e.key === 'Backspace') setTyped(typed.slice(0, -1));
+      else if (e.key === 'Enter' && typed && !frozen) {
+        const t = targets.find(x => String(x.val) === typed);
+        setTyped('');
+        if (t) shoot(t);
+      }
+    };
+    const timer = setInterval(tick, 50);
+    cleanup = () => clearInterval(timer);
+    resetPlay();
+    later(next, 300);
   };
 
   // 🚀 Rocket Race: type answers to fly forward; beat the alien to the finish line.
@@ -1304,26 +1383,37 @@
   $('sheetClose').onclick = () => $('sheet').classList.add('hidden');
   $('sheet').onclick = e => { if (e.target.id === 'sheet') $('sheet').classList.add('hidden'); };
   $('sheetPlay').onclick = () => startRun(sheetLevel);
-  // Two taps to reset: clears level stars and Speed Run bests (coins, characters and facts are kept).
-  let resetTimer = null;
-  $('resetBtn').onclick = () => {
-    const btn = $('resetBtn');
-    if (btn.dataset.armed !== '1') {
-      btn.dataset.armed = '1';
-      btn.textContent = 'Tap again to lock all levels and clear stars';
-      clearTimeout(resetTimer);
-      resetTimer = setTimeout(() => { btn.dataset.armed = ''; btn.textContent = 'Reset levels'; }, 3000);
-      return;
-    }
-    clearTimeout(resetTimer);
-    btn.dataset.armed = '';
-    btn.textContent = 'Reset levels';
+  // Two taps to reset levels: clears level stars and Speed Run bests (coins, characters and facts are kept).
+  function twoTapReset(id, label, armedLabel, doReset) {
+    let timer = null;
+    $(id).onclick = () => {
+      const btn = $(id);
+      clearTimeout(timer);
+      if (btn.dataset.armed !== '1') {
+        btn.dataset.armed = '1';
+        btn.textContent = armedLabel;
+        timer = setTimeout(() => { btn.dataset.armed = ''; btn.textContent = label; }, 3000);
+        return;
+      }
+      btn.dataset.armed = '';
+      btn.textContent = label;
+      doReset();
+    };
+  }
+  twoTapReset('resetBtn', 'Reset levels', 'Tap again to lock all levels and clear stars', () => {
     save.stars = LEVELS.map(() => 0);
     save.sprintBest = LEVELS.map(() => 0);
     persist();
     renderMap();
     toast('🔄 Levels reset — back to Level 1!');
-  };
+  });
+  // Two taps to clear the My Facts chart (mastered / learning facts).
+  twoTapReset('resetFactsBtn', 'Reset facts', 'Tap again to clear the whole facts chart', () => {
+    save.facts = {};
+    persist();
+    renderFacts();
+    toast('🔄 Facts chart cleared!');
+  });
   $('sheetSprint').onclick = () => startSprint(sheetLevel);
 
   renderMute();
