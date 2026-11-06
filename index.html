@@ -73,11 +73,15 @@
   .link-btn { background: none; border: none; color: var(--muted); text-decoration: underline; cursor: pointer; font-size: .95rem; }
 
   /* Avatar */
-  .avatar { position: relative; display: inline-block; line-height: 1; }
-  .avatar .pet { position: absolute; right: -.6em; bottom: -.05em; font-size: .45em; }
-  .avatar .hat { position: absolute; left: 50%; top: -.42em; transform: translateX(-50%) rotate(-10deg); font-size: .62em; }
-  .avatar.big { font-size: 5.5rem; margin: 18px 0 6px; }
-  .avatar.small { font-size: 2.4rem; }
+  /* A hero is a drawn body with an emoji head; the hat is placed from the head so it fits every character. */
+  .avatar { position: relative; display: inline-block; line-height: 1; width: 1.3em; height: 2.25em; flex: none; vertical-align: middle; }
+  .avatar .head { position: absolute; left: 50%; top: .32em; transform: translateX(-50%); font-size: 1em; z-index: 2; }
+  .avatar .hat { position: absolute; left: 50%; top: 0; transform: translateX(-50%) rotate(-8deg); font-size: .6em; z-index: 3; }
+  .avatar .body-svg { position: absolute; left: 50%; top: 1.18em; width: 1.15em; height: 1.06em; transform: translateX(-50%); z-index: 1; }
+  .avatar .pet { position: absolute; right: -.5em; bottom: 0; font-size: .5em; z-index: 4; }
+  .avatar.big { font-size: 3.6rem; margin: 12px 0 4px; }
+  .avatar.small { font-size: 1.5rem; }
+  .mini-body svg { width: 38px; height: 35px; vertical-align: middle; }
   .avatar.bounce { animation: bounce .5s; }
   .avatar.sad { animation: shake .4s; }
 
@@ -273,7 +277,6 @@
   .item .e svg { vertical-align: middle; }
   .swatch { display: inline-block; width: 34px; height: 34px; border-radius: 10px; vertical-align: middle; border: 2px solid rgba(255,255,255,.6); }
   .shop-note { text-align: left; margin: -4px 0 8px; color: var(--muted); font-size: .85rem; }
-  .shop .avatar.big { margin-top: 40px; }
   .item.equipped { border-color: var(--good); }
   .item.cant { opacity: .5; }
 
@@ -442,11 +445,40 @@
 
   const CHARACTERS = [
     { e: '🦊', p: 0 }, { e: '🐼', p: 50 }, { e: '🐸', p: 80 }, { e: '🐰', p: 90 },
-    { e: '🐯', p: 120 }, { e: '🐨', p: 130 }, { e: '🐵', p: 140 }, { e: '🐙', p: 150 },
-    { e: '🐧', p: 160 }, { e: '🦁', p: 180 }, { e: '🦄', p: 200 }, { e: '🦉', p: 220 },
-    { e: '🤖', p: 250 }, { e: '👽', p: 280 }, { e: '🦈', p: 320 }, { e: '🦖', p: 350 },
-    { e: '🐲', p: 400 }, { e: '🦸', p: 500 }
+    { e: '🐯', p: 120 }, { e: '🐨', p: 130 }, { e: '🐵', p: 140 }, { e: '🐮', p: 150 },
+    { e: '🐷', p: 160 }, { e: '🦁', p: 180 }, { e: '🦄', p: 200 }, { e: '🐺', p: 220 },
+    { e: '🤖', p: 250 }, { e: '👽', p: 280 }, { e: '🐻', p: 300 }, { e: '🐙', p: 320 },
+    { e: '🐲', p: 400 }, { e: '😎', p: 450 }
   ];
+  // Outfits: clothes drawn on the hero's body.
+  const OUTFITS = [
+    { id: 'tee',     p: 0,   shirt: '#3b82f6', pants: '#1e3a8a', shoes: '#111827' },
+    { id: 'hoodie',  p: 80,  shirt: '#f472b6', pants: '#475569', shoes: '#f8fafc', pocket: '#db2777' },
+    { id: 'sport',   p: 120, shirt: '#16a34a', pants: '#f8fafc', shoes: '#111827', emblem: '10' },
+    { id: 'stripes', p: 150, shirt: '#facc15', pants: '#1f2937', shoes: '#ef4444', stripes: '#f97316' },
+    { id: 'ninja',   p: 200, shirt: '#1f2937', pants: '#111827', shoes: '#111827', belt: '#ef4444' },
+    { id: 'space',   p: 250, shirt: '#e5e7eb', pants: '#cbd5e1', shoes: '#64748b', panel: '#3b82f6' },
+    { id: 'hero',    p: 300, shirt: '#dc2626', pants: '#1d4ed8', shoes: '#dc2626', cape: '#facc15', star: '#facc15', belt: '#facc15' },
+    { id: 'wizard',  p: 350, shirt: '#7c3aed', pants: '#7c3aed', shoes: '#4c1d95', robe: true, star: '#fde047' },
+    { id: 'royal',   p: 450, shirt: '#f59e0b', pants: '#92400e', shoes: '#78350f', cape: '#b91c1c', belt: '#fde68a' }
+  ];
+  function bodySVG(o) {
+    const hand = '#fcd9b6';
+    let s = '<svg class="body-svg" viewBox="0 0 100 92" aria-hidden="true">';
+    if (o.cape) s += `<path d="M28 6 L72 6 L88 84 Q50 92 12 84 Z" fill="${o.cape}"/>`;
+    if (!o.robe) s += `<rect x="35" y="56" width="13" height="26" rx="5" fill="${o.pants}"/><rect x="52" y="56" width="13" height="26" rx="5" fill="${o.pants}"/>`;
+    s += `<ellipse cx="40" cy="84" rx="10" ry="5.5" fill="${o.shoes}" stroke="rgba(0,0,0,.25)"/><ellipse cx="60" cy="84" rx="10" ry="5.5" fill="${o.shoes}" stroke="rgba(0,0,0,.25)"/>`;
+    s += `<rect x="12" y="10" width="13" height="38" rx="6.5" fill="${o.shirt}" transform="rotate(14 18 12)"/><rect x="75" y="10" width="13" height="38" rx="6.5" fill="${o.shirt}" transform="rotate(-14 82 12)"/>`;
+    s += `<circle cx="12" cy="49" r="6.5" fill="${hand}"/><circle cx="88" cy="49" r="6.5" fill="${hand}"/>`;
+    s += o.robe ? `<path d="M30 4 H70 L80 82 H20 Z" fill="${o.shirt}"/>` : `<rect x="26" y="4" width="48" height="58" rx="14" fill="${o.shirt}"/>`;
+    if (o.stripes) s += `<rect x="26" y="22" width="48" height="7" fill="${o.stripes}"/><rect x="26" y="38" width="48" height="7" fill="${o.stripes}"/>`;
+    if (o.pocket) s += `<rect x="36" y="38" width="28" height="12" rx="5" fill="${o.pocket}"/>`;
+    if (o.panel) s += `<rect x="38" y="20" width="24" height="16" rx="3" fill="${o.panel}"/><circle cx="44" cy="28" r="2.5" fill="#fde047"/><circle cx="53" cy="28" r="2.5" fill="#f87171"/>`;
+    if (o.belt) s += `<rect x="${o.robe ? 24 : 26}" y="50" width="${o.robe ? 52 : 48}" height="7" fill="${o.belt}"/>`;
+    if (o.star) s += '<polygon points="50,16 54,26 65,26 56,32 59,43 50,36 41,43 44,32 35,26 46,26" fill="' + o.star + '"/>';
+    if (o.emblem) s += `<text x="50" y="40" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff" font-family="sans-serif">${o.emblem}</text>`;
+    return s + '</svg>';
+  }
   const HATS = [
     { e: '', p: 0 }, { e: '🧢', p: 40 }, { e: '🎀', p: 60 }, { e: '👒', p: 80 },
     { e: '🎩', p: 100 }, { e: '🌸', p: 120 }, { e: '🎓', p: 150 }, { e: '⛑️', p: 200 },
@@ -483,7 +515,7 @@
   function freshSave() {
     return {
       coins: 0, stars: LEVELS.map(() => 0), sprintBest: LEVELS.map(() => 0), facts: {},
-      avatar: '🦊', hat: '', pet: '', ship: 'white', bg: 'night', owned: ['🦊', ''], daily: { date: '', count: 0, claimed: false }, muted: false
+      avatar: '🦊', hat: '', pet: '', outfit: 'tee', ship: 'white', bg: 'night', owned: ['🦊', ''], daily: { date: '', count: 0, claimed: false }, muted: false
     };
   }
   function loadSave() {
@@ -582,7 +614,12 @@
   function renderMute() { $('muteBtn').textContent = save.muted ? '🔇' : '🔊'; }
 
   // ---------- UI helpers ----------
-  function avatarHTML() { return `<span class="face">${save.avatar}</span>${save.hat ? `<span class="hat">${save.hat}</span>` : ''}${save.pet ? `<span class="pet">${save.pet}</span>` : ''}`; }
+  function avatarHTML() {
+    const o = OUTFITS.find(x => x.id === save.outfit) || OUTFITS[0];
+    return bodySVG(o) + `<span class="head">${save.avatar}</span>`
+      + (save.hat ? `<span class="hat">${save.hat}</span>` : '')
+      + (save.pet ? `<span class="pet">${save.pet}</span>` : '');
+  }
   function applyBackground() {
     const bg = BACKGROUNDS.find(x => x.id === save.bg);
     const root = document.documentElement.style;
@@ -1419,6 +1456,8 @@
   // ---------- Shop ----------
   const SHOP = [
     { slot: 'avatar', title: '🦊 Characters', items: CHARACTERS.map(it => ({ ...it, id: it.e, v: it.e })) },
+    { slot: 'outfit', title: '👕 Outfits', note: 'Clothes for your hero.', items: OUTFITS.map(it => ({ ...it, id: 'outfit:' + it.id, v: it.id,
+        icon: `<span class="mini-body">${bodySVG(it)}</span>` })) },
     { slot: 'hat', title: '🎩 Hats', items: HATS.map(it => ({ ...it, id: it.e, v: it.e })) },
     { slot: 'pet', title: '🐶 Pets', note: 'Your pet follows you everywhere.', items: PETS.map(it => ({ ...it, id: 'pet:' + it.e, v: it.e })) },
     { slot: 'ship', title: '🛸 Ship colors', note: 'Used for your ship in Asteroid Blaster.', items: SHIPS.map(it => ({ ...it, id: 'ship:' + it.id, v: it.id,
