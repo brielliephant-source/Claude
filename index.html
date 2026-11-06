@@ -221,8 +221,8 @@
   .hero-spot.sad { animation: shake .4s; }
   .proj { position: absolute; font-size: 2rem; transform: translate(-50%, -50%); transition: left .35s ease-in, top .35s ease-in; z-index: 5; pointer-events: none; }
   .proj.big { font-size: 3rem; }
-  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
-  .choice { font-size: 1.8rem; font-weight: bold; padding: 12px 0; border: none; border-radius: 14px; background: var(--pad); color: var(--pad-ink); box-shadow: 0 4px 0 var(--pad-edge); cursor: pointer; }
+  .choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+  .choice { font-size: 1.6rem; font-weight: bold; padding: 12px 0; border: none; border-radius: 14px; background: var(--pad); color: var(--pad-ink); box-shadow: 0 4px 0 var(--pad-edge); cursor: pointer; }
   .choice:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--pad-edge); }
   .choice:disabled { cursor: default; }
   .choice.right { background: var(--good); color: #fff; box-shadow: 0 4px 0 #15803d; }
@@ -309,7 +309,32 @@
   .item .e svg { vertical-align: middle; }
   .swatch { display: inline-block; width: 34px; height: 34px; border-radius: 10px; vertical-align: middle; border: 2px solid rgba(255,255,255,.6); }
   .shop-note { text-align: left; margin: -4px 0 8px; color: var(--muted); font-size: .85rem; }
-  .item.equipped { border-color: var(--good); }
+  .item.equipped { box-shadow: 0 0 0 3px var(--good); }
+  .rar { display: block; font-size: .6rem; font-weight: bold; text-transform: uppercase; letter-spacing: .3px; margin: 2px 0; }
+  .r-common { border-color: #94a3b8; } .r-common .rar { color: #64748b; }
+  .r-rare { border-color: #3b82f6; } .r-rare .rar { color: #3b82f6; }
+  .r-epic { border-color: #a855f7; } .r-epic .rar { color: #a855f7; }
+  .r-legendary { border-color: #f59e0b; background: linear-gradient(180deg, rgba(245,158,11,.22), var(--soft)); } .r-legendary .rar { color: #d97706; }
+  .item.r-mythic {
+    border-color: transparent;
+    background: linear-gradient(180deg, rgba(168,85,247,.18), var(--soft)) padding-box, linear-gradient(90deg, #f43f5e, #f59e0b, #22c55e, #3b82f6, #a855f7, #f43f5e) border-box;
+    background-size: 100% 100%, 300% 100%; animation: rainbowShift 3s linear infinite;
+  }
+  .r-mythic .rar { background: linear-gradient(90deg, #f43f5e, #f59e0b, #22c55e, #3b82f6, #a855f7); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .rarity-key { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 12px; margin: 4px 0 6px; }
+  .rarity-key .rar { font-size: .72rem; }
+  .avatar .aura { position: absolute; left: 50%; top: 55%; width: 1.9em; height: 1.9em; border-radius: 50%; z-index: 0; pointer-events: none;
+    background: conic-gradient(rgba(244,63,94,.5), rgba(245,158,11,.5), rgba(34,197,94,.5), rgba(59,130,246,.5), rgba(168,85,247,.5), rgba(244,63,94,.5));
+    filter: blur(.14em); animation: auraSpin 4s linear infinite; }
+  .rainbow { animation: hueSpin 1.6s linear infinite; }
+  .ship.rainbow { animation: shipHue 1.6s linear infinite; }
+  @keyframes shipHue { from { filter: drop-shadow(0 0 5px var(--ship)) hue-rotate(0deg); } to { filter: drop-shadow(0 0 5px var(--ship)) hue-rotate(360deg); } }
+  .aurora-swatch, body.bg-aurora { background: linear-gradient(120deg, #0f766e, #4c1d95, #be185d, #1d4ed8, #0f766e) !important; background-size: 400% 400% !important; animation: auroraMove 14s ease infinite; }
+  body.bg-aurora { background-attachment: fixed !important; }
+  @keyframes rainbowShift { to { background-position: 0 0, 300% 0; } }
+  @keyframes auraSpin { from { transform: translate(-50%, -50%) rotate(0); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+  @keyframes hueSpin { to { filter: hue-rotate(360deg); } }
+  @keyframes auroraMove { 50% { background-position: 100% 50%; } }
   .item.cant { opacity: .5; }
 
   /* Facts grid */
@@ -477,12 +502,13 @@
     { e: '🐉', name: 'Dragon Emperor' }
   ];
   const bossFor = level => BOSSES[Math.min(level, BOSSES.length - 1)];
-  const bossHP = level => LEVELS[level] === 'mix' ? 16 : 8 + Math.floor(level / 2);
+  const bossHP = level => LEVELS[level] === 'mix' ? 26 : 12 + level;
+  const BOSS_CRIT_MS = 2500;
   function stageInfo(s, level) {
     if (s !== 'boss') return STAGES[s];
     const b = bossFor(level);
     return { ...STAGES.boss, icon: b.e, name: b.name,
-      desc: `Boss battle! ${b.name} has ${bossHP(level)} HP. Answer to blast it — fast answers do double damage. Answer before its attack charges, or you lose a heart!` };
+      desc: `Boss battle! ${b.name} has ${bossHP(level)} HP and heals when it hits you. Answers under 2.5 seconds do double damage. Answer before its attack charges, or you lose a heart!` };
   }
   const HEARTS = 5;
   const BOSS_FACTS = 15;
@@ -497,8 +523,11 @@
     { e: '🐯', p: 120 }, { e: '🐨', p: 130 }, { e: '🐵', p: 140 }, { e: '🐮', p: 150 },
     { e: '🐷', p: 160 }, { e: '🦁', p: 180 }, { e: '🦄', p: 200 }, { e: '🐺', p: 220 },
     { e: '🤖', p: 250 }, { e: '👽', p: 280 }, { e: '🐻', p: 300 }, { e: '🐙', p: 320 },
-    { e: '🐲', p: 400 }, { e: '😎', p: 450 }
-  ];
+    { e: '🐲', p: 400 }, { e: '😎', p: 450 },
+    { e: '🐭', p: 60 }, { e: '🐔', p: 95 }, { e: '😺', p: 110 }, { e: '🐗', p: 170 },
+    { e: '🤡', p: 240 }, { e: '🎃', p: 340 }, { e: '💀', p: 420 }, { e: '😈', p: 550 },
+    { e: '🌝', p: 750 }, { e: '🌞', p: 1000 }, { e: '🤩', p: 1500 }
+  ].sort((a, b) => a.p - b.p);
   // Outfits: clothes drawn on the hero's body.
   const OUTFITS = [
     { id: 'tee',     p: 0,   shirt: '#3b82f6', pants: '#1e3a8a', shoes: '#111827' },
@@ -509,8 +538,14 @@
     { id: 'space',   p: 250, shirt: '#e5e7eb', pants: '#cbd5e1', shoes: '#64748b', panel: '#3b82f6' },
     { id: 'hero',    p: 300, shirt: '#dc2626', pants: '#1d4ed8', shoes: '#dc2626', cape: '#facc15', star: '#facc15', belt: '#facc15' },
     { id: 'wizard',  p: 350, shirt: '#7c3aed', pants: '#7c3aed', shoes: '#4c1d95', robe: true, star: '#fde047' },
-    { id: 'royal',   p: 450, shirt: '#f59e0b', pants: '#92400e', shoes: '#78350f', cape: '#b91c1c', belt: '#fde68a' }
-  ];
+    { id: 'royal',   p: 450, shirt: '#f59e0b', pants: '#92400e', shoes: '#78350f', cape: '#b91c1c', belt: '#fde68a' },
+    { id: 'chef',    p: 90,  shirt: '#f8fafc', pants: '#1f2937', shoes: '#111827', pocket: '#e2e8f0', buttons: '#94a3b8' },
+    { id: 'pirate',  p: 180, shirt: '#f8fafc', pants: '#1f2937', shoes: '#78350f', stripes: '#dc2626', belt: '#78350f' },
+    { id: 'knight',  p: 380, shirt: '#94a3b8', pants: '#64748b', shoes: '#475569', belt: '#475569', star: '#dc2626', cape: '#1d4ed8' },
+    { id: 'golden',  p: 700, shirt: '#fbbf24', pants: '#d97706', shoes: '#b45309', cape: '#fde68a', star: '#fff7ed', belt: '#b45309' },
+    { id: 'galaxy',  p: 1000, shirt: '#312e81', pants: '#1e1b4b', shoes: '#0f172a', cape: '#7c3aed', sparkle: true },
+    { id: 'rainbow', p: 1600, shirt: '#ef4444', pants: '#3b82f6', shoes: '#a855f7', rainbow: true, cape: '#22c55e', star: '#fff' }
+  ].sort((a, b) => a.p - b.p);
   function bodySVG(o) {
     const hand = '#fcd9b6';
     let s = '<svg class="body-svg" viewBox="0 0 100 92" aria-hidden="true">';
@@ -525,32 +560,51 @@
     if (o.panel) s += `<rect x="38" y="20" width="24" height="16" rx="3" fill="${o.panel}"/><circle cx="44" cy="28" r="2.5" fill="#fde047"/><circle cx="53" cy="28" r="2.5" fill="#f87171"/>`;
     if (o.belt) s += `<rect x="${o.robe ? 24 : 26}" y="50" width="${o.robe ? 52 : 48}" height="7" fill="${o.belt}"/>`;
     if (o.star) s += '<polygon points="50,16 54,26 65,26 56,32 59,43 50,36 41,43 44,32 35,26 46,26" fill="' + o.star + '"/>';
+    if (o.rainbow) s += ['#f97316', '#facc15', '#22c55e', '#3b82f6', '#a855f7'].map((c, k) => `<rect x="26" y="${14 + k * 8}" width="48" height="8" fill="${c}"/>`).join('');
+    if (o.buttons) s += `<circle cx="50" cy="16" r="2.5" fill="${o.buttons}"/><circle cx="50" cy="26" r="2.5" fill="${o.buttons}"/>`;
+    if (o.sparkle) s += [[36, 16, 2.5], [60, 22, 2], [44, 34, 1.6], [64, 44, 2.4], [34, 48, 1.8], [54, 52, 1.5], [50, 12, 1.4]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff"/>`).join('')
+      + '<polygon points="50,28 52,34 58,34 53,38 55,44 50,40 45,44 47,38 42,34 48,34" fill="#fde047"/>';
     if (o.emblem) s += `<text x="50" y="40" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff" font-family="sans-serif">${o.emblem}</text>`;
     return s + '</svg>';
   }
   const HATS = [
     { e: '', p: 0 }, { e: '🧢', p: 40 }, { e: '🎀', p: 60 }, { e: '👒', p: 80 },
     { e: '🎩', p: 100 }, { e: '🌸', p: 120 }, { e: '🎓', p: 150 }, { e: '⛑️', p: 200 },
-    { e: '🪖', p: 250 }, { e: '⭐', p: 280 }, { e: '👑', p: 300 }, { e: '🔥', p: 450 }
-  ];
+    { e: '🪖', p: 250 }, { e: '⭐', p: 280 }, { e: '👑', p: 300 }, { e: '🔥', p: 450 },
+    { e: '🌻', p: 90 }, { e: '🍀', p: 130 }, { e: '🍄', p: 170 }, { e: '🎉', p: 220 },
+    { e: '🌙', p: 360 }, { e: '💎', p: 650 }, { e: '🪐', p: 900 }, { e: '🌈', p: 1300 }
+  ].sort((a, b) => a.p - b.p);
   const PETS = [
     { e: '', p: 0 }, { e: '🐤', p: 60 }, { e: '🐶', p: 100 }, { e: '🐱', p: 100 },
     { e: '🐢', p: 120 }, { e: '🐠', p: 140 }, { e: '🦋', p: 160 }, { e: '🐹', p: 180 },
-    { e: '🦜', p: 220 }, { e: '🦕', p: 300 }, { e: '🐉', p: 400 }, { e: '🦄', p: 450 }
-  ];
+    { e: '🦜', p: 220 }, { e: '🦕', p: 300 }, { e: '🐉', p: 400 }, { e: '🦄', p: 450 },
+    { e: '🐣', p: 70 }, { e: '🐞', p: 90 }, { e: '🐝', p: 110 }, { e: '🦔', p: 150 },
+    { e: '🦦', p: 240 }, { e: '🐧', p: 260 }, { e: '🦉', p: 280 }, { e: '🦈', p: 500 },
+    { e: '🦖', p: 650 }, { e: '🌟', p: 900 }, { e: '🧚', p: 1200 }
+  ].sort((a, b) => a.p - b.p);
   // Ship colors are used for your ship in Asteroid Blaster.
   const SHIPS = [
     { id: 'white', c: '#ffffff', p: 0 }, { id: 'cyan', c: '#22d3ee', p: 60 }, { id: 'lime', c: '#a3e635', p: 80 },
     { id: 'pink', c: '#f472b6', p: 100 }, { id: 'orange', c: '#fb923c', p: 120 }, { id: 'red', c: '#f87171', p: 140 },
-    { id: 'purple', c: '#c084fc', p: 160 }, { id: 'gold', c: '#facc15', p: 250 }
-  ];
+    { id: 'purple', c: '#c084fc', p: 160 }, { id: 'gold', c: '#facc15', p: 250 },
+    { id: 'silver', c: '#cbd5e1', p: 190 }, { id: 'emerald', c: '#10b981', p: 220 }, { id: 'neon', c: '#39ff14', p: 420 },
+    { id: 'plasma', c: '#f0abfc', p: 600 }, { id: 'rainbow', c: '#f43f5e', p: 1000, rainbow: true }
+  ].sort((a, b) => a.p - b.p);
   // Backgrounds change the colors behind the whole game.
   const BACKGROUNDS = [
     { id: 'night', a: '#312e81', b: '#1e1b4b', p: 0 }, { id: 'ocean', a: '#0891b2', b: '#0c4a6e', p: 100 },
     { id: 'forest', a: '#65a30d', b: '#14532d', p: 120 }, { id: 'sunset', a: '#db2777', b: '#7c2d12', p: 150 },
     { id: 'candy', a: '#c084fc', b: '#831843', p: 180 }, { id: 'lava', a: '#ea580c', b: '#450a0a', p: 220 },
-    { id: 'galaxy', a: '#6d28d9', b: '#020617', p: 260 }, { id: 'gold', a: '#ca8a04', b: '#422006', p: 350 }
+    { id: 'galaxy', a: '#6d28d9', b: '#020617', p: 260 }, { id: 'gold', a: '#ca8a04', b: '#422006', p: 350 },
+    { id: 'mint', a: '#34d399', b: '#064e3b', p: 90 }, { id: 'ice', a: '#7dd3fc', b: '#1e3a8a', p: 160 },
+    { id: 'royal', a: '#a21caf', b: '#1e1b4b', p: 450 }, { id: 'aurora', a: '#0d9488', b: '#4c1d95', p: 1000, anim: true }
+  ].sort((a, b) => a.p - b.p);
+  // Rarity comes from an item's price.
+  const RARITIES = [
+    { id: 'common', name: 'Common', min: 0 }, { id: 'rare', name: 'Rare', min: 100 }, { id: 'epic', name: 'Epic', min: 200 },
+    { id: 'legendary', name: 'Legendary', min: 400 }, { id: 'mythic', name: 'Mythic', min: 800 }
   ];
+  const rarityOf = p => RARITIES.filter(r => p >= r.min).pop();
 
   const $ = id => document.getElementById(id);
   const rand = n => Math.floor(Math.random() * n);
@@ -665,13 +719,16 @@
   // ---------- UI helpers ----------
   function avatarHTML() {
     const o = OUTFITS.find(x => x.id === save.outfit) || OUTFITS[0];
-    return bodySVG(o) + `<span class="head">${save.avatar}</span>`
+    const gear = [CHARACTERS.find(x => x.e === save.avatar), HATS.find(x => x.e === save.hat), PETS.find(x => x.e === save.pet), o];
+    const mythic = gear.some(it => it && rarityOf(it.p).id === 'mythic');
+    return (mythic ? '<span class="aura"></span>' : '') + bodySVG(o) + `<span class="head">${save.avatar}</span>`
       + (save.hat ? `<span class="hat">${save.hat}</span>` : '')
       + (save.pet ? `<span class="pet">${save.pet}</span>` : '');
   }
   function applyBackground() {
     const bg = BACKGROUNDS.find(x => x.id === save.bg);
     const root = document.documentElement.style;
+    document.body.classList.toggle('bg-aurora', !!(bg && bg.anim));
     if (!bg || bg.id === 'night') { root.removeProperty('--bg'); root.removeProperty('--bg2'); return; }
     root.setProperty('--bg2', bg.a); root.setProperty('--bg', bg.b);
   }
@@ -927,9 +984,9 @@
   // ☄️ Asteroid Blaster: numbered asteroids drift through space (wrapping at the edges).
   // Tap the one with the answer and your ship turns and blasts it before the shot clock runs out.
   MINI.asteroid = facts => {
-    const shipColor = (SHIPS.find(x => x.id === save.ship) || SHIPS[0]).c;
+    const shipItem = SHIPS.find(x => x.id === save.ship) || SHIPS[0], shipColor = shipItem.c;
     const SHIP_SVG = `<svg viewBox="0 0 40 40" aria-hidden="true"><polygon points="20,3 34,36 20,28 6,36" fill="rgba(255,255,255,.08)" stroke="${shipColor}" stroke-width="2.5" stroke-linejoin="round"/></svg>`;
-    const space = mk('div', 'space', `<div class="ship" style="--ship:${shipColor}">${SHIP_SVG}</div><div class="shotclock"><div></div></div>`);
+    const space = mk('div', 'space', `<div class="ship${shipItem.rainbow ? ' rainbow' : ''}" style="--ship:${shipColor}">${SHIP_SVG}</div><div class="shotclock"><div></div></div>`);
     const typedEl = mk('div', 'typed');
     space.appendChild(typedEl);
     $('stage').appendChild(space);
@@ -1009,6 +1066,7 @@
       ship.style.transform = `translate(-50%, -50%) rotate(${deg.toFixed(1)}deg)`;
       const el = mk('div', 'laser');
       el.style.background = shipColor;
+      if (shipItem.rainbow) el.classList.add('rainbow');
       space.appendChild(el);
       bullets.push({ el, x: W / 2, y: H / 2, target: rock, onHit });
       sound('zoom');
@@ -1170,7 +1228,7 @@
     $('stage').append(arena, choices);
     const bossEl = arena.querySelector('.boss'), hpEl = arena.querySelector('.boss-hp > div'), hpNum = arena.querySelector('.boss-hp-num');
     const chargeEl = arena.querySelector('.charge > div'), heroEl = arena.querySelector('.hero-spot');
-    const baseLimit = run.t === 'mix' ? 5500 : Math.max(5500, 9000 - run.level * 300);
+    const baseLimit = run.t === 'mix' ? 4000 : Math.max(4200, 7000 - run.level * 230);
     let hp = maxHp, fact = null, answer = 0, frozen = true, qStart = 0, limit = baseLimit, typed = '', angry = false;
     const setTyped = v => { typed = v; typedEl.textContent = v; };
     const flash = (el, cls, ms) => { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); setTimeout(() => el.classList.remove(cls), ms); };
@@ -1190,12 +1248,12 @@
       setQuestion(`${a} × ${b}`);
       setTyped('');
       choices.innerHTML = '';
-      choicesFor(a, b, 4).forEach(v => {
+      choicesFor(a, b, 6).forEach(v => {
         const btn = mk('button', 'choice'); btn.textContent = v;
         btn.addEventListener('pointerdown', e => { e.preventDefault(); pick(v, btn); });
         choices.appendChild(btn);
       });
-      limit = baseLimit * (angry ? .8 : 1);
+      limit = baseLimit * (angry ? .75 : 1);
       chargeEl.style.width = '0%';
       qStart = performance.now();
       frozen = false;
@@ -1225,7 +1283,7 @@
       [...choices.children].forEach(c => { c.disabled = true; });
       if (v !== answer) { btn.classList.add('wrong'); return attack(false); }
       btn.classList.add('right');
-      const crit = ms < MASTER_MS;
+      const crit = ms < BOSS_CRIT_MS;
       gotIt(fact[0], fact[1], ms, heroEl);
       setQuestion(`${fact[0]} × ${fact[1]} = ${answer}`, 'good');
       flash(heroEl, 'bounce', 500);
@@ -1251,6 +1309,10 @@
       projectile(bossEl, heroEl, '💥', 'big', () => {
         flash(arena, 'quake', 400);
         flash(heroEl, 'sad', 400);
+        if (hp < maxHp) {  // the boss heals 1 HP every time it hits you
+          hp++; renderHp();
+          const [x, y] = stagePoint(bossEl); floater(x, y - 20, '💚 +1 HP');
+        }
         const dead = missedIt(fact[0], fact[1], true);
         later(dead ? finishRun : next, 1400);
       });
@@ -1634,13 +1696,14 @@
     { slot: 'hat', title: '🎩 Hats', items: HATS.map(it => ({ ...it, id: it.e, v: it.e })) },
     { slot: 'pet', title: '🐶 Pets', note: 'Your pet follows you everywhere.', items: PETS.map(it => ({ ...it, id: 'pet:' + it.e, v: it.e })) },
     { slot: 'ship', title: '🛸 Ship colors', note: 'Used for your ship in Asteroid Blaster.', items: SHIPS.map(it => ({ ...it, id: 'ship:' + it.id, v: it.id,
-        icon: `<svg viewBox="0 0 40 40" width="34" height="34"><polygon points="20,3 34,36 20,28 6,36" fill="#05060f" stroke="${it.c}" stroke-width="3" stroke-linejoin="round"/></svg>` })) },
+        icon: `<svg viewBox="0 0 40 40" width="34" height="34" class="${it.rainbow ? 'rainbow' : ''}"><polygon points="20,3 34,36 20,28 6,36" fill="#05060f" stroke="${it.c}" stroke-width="3" stroke-linejoin="round"/></svg>` })) },
     { slot: 'bg', title: '🎨 Backgrounds', note: 'Changes the colors behind the game.', items: BACKGROUNDS.map(it => ({ ...it, id: 'bg:' + it.id, v: it.id,
-        icon: `<i class="swatch" style="background:radial-gradient(circle at 30% 20%, ${it.a}, ${it.b})"></i>` })) }
+        icon: `<i class="swatch${it.anim ? ' aurora-swatch' : ''}" style="background:radial-gradient(circle at 30% 20%, ${it.a}, ${it.b})"></i>` })) }
   ];
   function renderShop(stay) {
     $('shopAvatar').innerHTML = avatarHTML();
     const box = $('shopSections'); box.innerHTML = '';
+    box.appendChild(mk('div', 'rarity-key', RARITIES.map(r => `<span class="r-${r.id}"><b class="rar">${r.name}</b></span>`).join('')));
     SHOP.forEach(sec => {
       box.appendChild(mk('h3', '', sec.title));
       if (sec.note) box.appendChild(mk('p', 'shop-note', sec.note));
@@ -1649,8 +1712,9 @@
         const owned = it.p === 0 || save.owned.includes(it.id);
         const equipped = save[sec.slot] === it.v;
         const icon = it.icon || it.e || '🚫';
-        const b = mk('button', 'item' + (equipped ? ' equipped' : '') + (!owned && save.coins < it.p ? ' cant' : ''),
-          `<span class="e">${icon}</span><span class="p">${equipped ? 'Using' : owned ? 'Use' : '🪙 ' + it.p}</span>`);
+        const r = rarityOf(it.p);
+        const b = mk('button', `item r-${r.id}` + (equipped ? ' equipped' : '') + (!owned && save.coins < it.p ? ' cant' : ''),
+          `<span class="e">${icon}</span><span class="rar">${r.name}</span><span class="p">${equipped ? '✓ Using' : owned ? 'Use' : '🪙 ' + it.p}</span>`);
         b.setAttribute('aria-label', `${sec.title} ${it.v || 'none'}`);
         b.onclick = () => {
           if (!owned) {
