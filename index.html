@@ -22,19 +22,21 @@
     --bad: #ef4444;
     --sea-top: #7dd3fc;
     --sea-bot: #0369a1;
+    --grass: #4ade80;
+    --grass-dark: #16a34a;
     --radius: 20px;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #0b0a24; --bg2: #24206a; --card: #1c1e3f; --ink: #f1f5f9; --muted: #a5b4fc;
       --soft: #272a52; --line: #363a6b; --pad: #2c2f63; --pad-ink: #e0e7ff; --pad-edge: #1a1c40;
-      --sea-top: #0e7490; --sea-bot: #082f49;
+      --sea-top: #0e7490; --sea-bot: #082f49; --grass: #15803d; --grass-dark: #14532d;
     }
   }
   :root[data-theme="dark"] {
     --bg: #0b0a24; --bg2: #24206a; --card: #1c1e3f; --ink: #f1f5f9; --muted: #a5b4fc;
     --soft: #272a52; --line: #363a6b; --pad: #2c2f63; --pad-ink: #e0e7ff; --pad-edge: #1a1c40;
-    --sea-top: #0e7490; --sea-bot: #082f49;
+    --sea-top: #0e7490; --sea-bot: #082f49; --grass: #15803d; --grass-dark: #14532d;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; min-height: 100%; }
@@ -74,7 +76,7 @@
   .avatar { position: relative; display: inline-block; line-height: 1; }
   .avatar .hat { position: absolute; left: 50%; top: -.42em; transform: translateX(-50%) rotate(-10deg); font-size: .62em; }
   .avatar.big { font-size: 5.5rem; margin: 18px 0 6px; }
-  .avatar.small { font-size: 2.6rem; }
+  .avatar.small { font-size: 2.4rem; }
   .avatar.bounce { animation: bounce .5s; }
   .avatar.sad { animation: shake .4s; }
 
@@ -109,21 +111,49 @@
   .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: flex; align-items: flex-end; justify-content: center; z-index: 20; padding: 16px; }
   .sheet { width: 100%; max-width: 520px; text-align: center; display: flex; flex-direction: column; gap: 10px; animation: slideUp .25s; }
   .sheet h3 { margin: 0; font-size: 1.4rem; }
-  .sheet p { margin: 0 0 6px; color: var(--muted); }
+  .sheet p { margin: 0 0 4px; color: var(--muted); }
   .sheet-stars { font-size: 2rem; color: var(--accent); letter-spacing: 4px; }
+  .stage-strip { font-size: 1.6rem; letter-spacing: 2px; }
+  .practice-label { font-size: .85rem; color: var(--muted); font-weight: bold; margin-top: 4px; }
+  .practice-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .practice-row .btn { padding: 8px 2px; font-size: .75rem; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .practice-row .btn span { font-size: 1.5rem; }
 
-  /* Play (bubble pop) */
+  /* Stage intro */
+  .intro { text-align: center; }
+  .intro .cleared { color: var(--good); font-weight: bold; min-height: 1.4em; }
+  .intro .big-icon { font-size: 5rem; margin: 6px 0; animation: bounce .8s; }
+  .intro h2 { margin: 4px 0; font-size: 1.8rem; }
+  .intro .stage-num { color: var(--muted); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; font-size: .85rem; }
+  .intro p { color: var(--muted); margin: 8px 0 16px; }
+  .dots { display: flex; justify-content: center; gap: 8px; margin: 12px 0 18px; }
+  .dot { width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; background: var(--soft); border: 3px solid var(--line); }
+  .dot.done { background: var(--good); border-color: var(--good); }
+  .dot.now { border-color: var(--accent); transform: scale(1.15); }
+  .intro-hearts { font-size: 1.2rem; margin-bottom: 12px; }
+
+  /* Game shell */
   .play { padding: 14px; }
   .hud { display: flex; justify-content: space-between; align-items: center; font-weight: bold; margin-bottom: 8px; gap: 6px; }
-  .hearts { font-size: 1.2rem; letter-spacing: 1px; }
-  .streak { color: #ea580c; }
+  .hearts { font-size: 1.05rem; letter-spacing: 0; }
+  .streak { color: #ea580c; white-space: nowrap; }
   .streak.hot { animation: bump .35s; }
-  .qbox { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 10px 0; }
-  .question { font-size: 2.8rem; font-weight: bold; text-align: center; transition: color .2s; }
+  .qbox { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 8px 0; min-height: 64px; }
+  .question { font-size: 2.6rem; font-weight: bold; text-align: center; transition: color .2s; }
+  .question.small { font-size: 1.5rem; }
   .question.good { color: var(--good); }
   .question.bad { color: var(--bad); }
+  .stage { position: relative; }
+  .hint { text-align: center; color: var(--muted); font-size: .85rem; margin-top: 10px; min-height: 1em; }
+  .spark { position: absolute; width: 10px; height: 10px; border-radius: 50%; pointer-events: none; animation: burst .6s forwards; z-index: 5; }
+  .floater { position: absolute; font-weight: bold; color: #fde047; text-shadow: 0 2px 4px rgba(0,0,0,.6); pointer-events: none; animation: floatUp .9s forwards; z-index: 6; font-size: 1.2rem; white-space: nowrap; }
+  .banner { position: fixed; top: 28%; left: 50%; transform: translateX(-50%); font-size: 1.8rem; font-weight: bold; color: #fde047; text-shadow: 0 2px 8px rgba(0,0,0,.6); pointer-events: none; animation: pop 1.3s forwards; z-index: 30; text-align: center; width: max-content; max-width: 90vw; }
+  .typed { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,.92); color: #0c2d48; font-weight: bold; font-size: 1.4rem; border-radius: 10px; padding: 2px 14px; z-index: 7; min-width: 60px; text-align: center; }
+  .typed:empty { display: none; }
+
+  /* Mini-game: Bubble Pop */
   .arena {
-    position: relative; height: clamp(300px, 50vh, 400px); border-radius: 16px; overflow: hidden;
+    position: relative; height: clamp(280px, 46vh, 380px); border-radius: 16px; overflow: hidden;
     background: linear-gradient(180deg, var(--sea-top), var(--sea-bot)); touch-action: manipulation;
   }
   .arena::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 8px; background: repeating-linear-gradient(90deg, rgba(255,255,255,.5) 0 14px, transparent 14px 28px); }
@@ -138,25 +168,63 @@
   .bubble.fade { opacity: .25; pointer-events: none; transition: opacity .2s; }
   .bubble.wrongb { background: radial-gradient(circle at 30% 28%, #fff 0 10%, #fca5a5 40%, #ef4444 100%); color: #fff; text-shadow: none; }
   .bubble.reveal { background: radial-gradient(circle at 30% 28%, #fff 0 10%, #bbf7d0 40%, #22c55e 100%); color: #052e16; box-shadow: 0 0 0 6px rgba(34,197,94,.45); }
-  .typed { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,.9); color: #0c2d48; font-weight: bold; font-size: 1.4rem; border-radius: 10px; padding: 2px 14px; z-index: 3; min-width: 60px; text-align: center; }
-  .typed:empty { display: none; }
-  .hint { text-align: center; color: var(--muted); font-size: .85rem; margin-top: 10px; }
-  .spark { position: absolute; width: 10px; height: 10px; border-radius: 50%; pointer-events: none; animation: burst .6s forwards; z-index: 2; }
-  .floater { position: absolute; font-weight: bold; color: #fde047; text-shadow: 0 2px 4px rgba(0,0,0,.5); pointer-events: none; animation: floatUp .9s forwards; z-index: 4; font-size: 1.2rem; }
-  .banner { position: fixed; top: 28%; left: 50%; transform: translateX(-50%); font-size: 1.8rem; font-weight: bold; color: #fde047; text-shadow: 0 2px 8px rgba(0,0,0,.6); pointer-events: none; animation: pop 1.2s forwards; z-index: 30; text-align: center; width: max-content; max-width: 90vw; }
+
+  /* Mini-game: Mole Whack */
+  .moles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 12px; border-radius: 16px; background: var(--grass); touch-action: manipulation; }
+  .hole { position: relative; aspect-ratio: 1 / .95; overflow: hidden; }
+  .hole::before { content: ""; position: absolute; left: 6%; right: 6%; bottom: 6%; height: 30%; border-radius: 50%; background: radial-gradient(ellipse at center, #2b1a0b 0 50%, #5b3a1a 75%); }
+  .hole::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 12%; background: var(--grass); z-index: 3; }
+  .mole {
+    position: absolute; left: 50%; bottom: 10%; transform: translate(-50%, 120%); transition: transform .14s ease-out;
+    border: none; background: none; cursor: pointer; z-index: 2; display: flex; flex-direction: column; align-items: center; padding: 0;
+  }
+  .hole.up .mole { transform: translate(-50%, 0); }
+  .mole .sign { background: #fffbeb; color: #422006; border: 2px solid #92400e; border-radius: 8px; font-weight: bold; font-size: clamp(1rem, 4.6vw, 1.35rem); padding: 0 6px; min-width: 2.2em; margin-bottom: -4px; z-index: 1; position: relative; }
+  .mole .critter { font-size: clamp(2.1rem, 10vw, 3rem); line-height: 1; }
+  .hole.bonk .sign { background: var(--good); color: #fff; border-color: #15803d; }
+  .hole.bonk .critter { animation: squash .3s forwards; }
+  .hole.oops .sign { background: var(--bad); color: #fff; border-color: #991b1b; }
+  .hole.oops .mole { animation: shake .3s; }
+  .hammer { position: absolute; font-size: 2.2rem; pointer-events: none; z-index: 8; animation: hammer .25s forwards; }
+
+  /* Mini-game: Memory Match */
+  .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .mcard {
+    aspect-ratio: 3 / 4; border: none; border-radius: 12px; font-weight: bold; font-size: clamp(1rem, 4.6vw, 1.45rem);
+    cursor: pointer; background: linear-gradient(135deg, #a78bfa, #6366f1); color: #fff; box-shadow: 0 4px 0 #4338ca; padding: 0;
+  }
+  .mcard.flip { animation: flip .25s; }
+  .mcard.open { background: var(--pad); color: var(--pad-ink); box-shadow: 0 4px 0 var(--pad-edge); }
+  .mcard.matched { background: var(--good); color: #fff; box-shadow: 0 4px 0 #15803d; cursor: default; }
+  .mcard.nomatch { background: #fecaca; color: #7f1d1d; box-shadow: 0 4px 0 #fca5a5; animation: shake .35s; }
+
+  /* Mini-game: Rocket Race */
+  .track {
+    border-radius: 16px; padding: 6px 8px; margin-bottom: 10px; position: relative;
+    background: radial-gradient(circle at 20% 30%, rgba(255,255,255,.7) 0 1px, transparent 2px) 0 0 / 40px 30px,
+                radial-gradient(circle at 70% 70%, rgba(255,255,255,.5) 0 1px, transparent 2px) 0 0 / 55px 40px,
+                linear-gradient(180deg, #1e1b4b, #4c1d95);
+  }
+  .lane { position: relative; height: 48px; border-bottom: 2px dashed rgba(255,255,255,.25); }
+  .lane:last-child { border-bottom: none; }
+  .racer { position: absolute; top: 50%; left: 0; transform: translateY(-50%); font-size: 1.8rem; transition: left .3s; white-space: nowrap; }
+  .racer.rival { transition: none; }
+  .finish { position: absolute; right: 4px; top: 0; bottom: 0; display: flex; align-items: center; font-size: 1.5rem; }
+  .answer { text-align: center; font-size: 2.2rem; min-height: 58px; border: 3px dashed var(--line); border-radius: 14px; padding: 4px; margin: 4px 0 6px; font-weight: bold; }
+  .answer.good { border-color: var(--good); color: var(--good); border-style: solid; }
+  .answer.bad { border-color: var(--bad); color: var(--bad); border-style: solid; animation: shake .35s; }
+  .pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .pad button { font-size: 1.6rem; font-weight: bold; padding: 13px 0; border: none; border-radius: 14px; background: var(--pad); color: var(--pad-ink); cursor: pointer; box-shadow: 0 4px 0 var(--pad-edge); }
+  .pad.compact { gap: 8px; }
+  .pad.compact button { padding: 9px 0; font-size: 1.4rem; }
+  .pad button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--pad-edge); }
+  .pad .go { background: var(--good); color: #fff; box-shadow: 0 4px 0 #15803d; }
+  .pad .del { background: #fee2e2; color: #b91c1c; box-shadow: 0 4px 0 #fecaca; }
 
   /* Speed run */
   .clock { font-size: 1.3rem; }
   .clock.low { color: var(--bad); animation: bump .5s infinite; }
-  .answer { text-align: center; font-size: 2.4rem; min-height: 64px; border: 3px dashed var(--line); border-radius: 14px; padding: 6px; margin: 4px 0 6px; font-weight: bold; }
-  .answer.good { border-color: var(--good); color: var(--good); border-style: solid; }
-  .answer.bad { border-color: var(--bad); color: var(--bad); border-style: solid; animation: shake .35s; }
   .feedback { text-align: center; min-height: 24px; font-weight: bold; margin-bottom: 8px; color: var(--bad); }
-  .pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .pad button { font-size: 1.6rem; font-weight: bold; padding: 13px 0; border: none; border-radius: 14px; background: var(--pad); color: var(--pad-ink); cursor: pointer; box-shadow: 0 4px 0 var(--pad-edge); }
-  .pad button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--pad-edge); }
-  .pad .go { background: var(--good); color: #fff; box-shadow: 0 4px 0 #15803d; }
-  .pad .del { background: #fee2e2; color: #b91c1c; box-shadow: 0 4px 0 #fecaca; }
 
   /* Results */
   .result { text-align: center; }
@@ -190,7 +258,7 @@
   .fact-grid .mastered { background: var(--good); color: #fff; }
   .facts-note { text-align: center; color: var(--muted); font-size: .85rem; margin-top: 10px; }
 
-  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #111827; color: #fff; padding: 10px 16px; border-radius: 12px; font-weight: bold; z-index: 40; animation: slideUp .25s; max-width: calc(100vw - 32px); text-align: center; }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #111827; color: #fff; padding: 10px 16px; border-radius: 12px; font-weight: bold; z-index: 40; animation: toastIn .25s; max-width: calc(100vw - 32px); text-align: center; }
   .confetti { position: fixed; top: -10px; width: 10px; height: 14px; pointer-events: none; animation: fall linear forwards; z-index: 30; }
 
   @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
@@ -202,9 +270,11 @@
   @keyframes floatUp { to { transform: translateY(-60px); opacity: 0; } }
   @keyframes pop { 0% { opacity: 0; transform: translate(-50%, 20px) scale(.6); } 25% { opacity: 1; transform: translate(-50%, 0) scale(1.15); } 100% { opacity: 0; transform: translate(-50%, -40px) scale(1); } }
   @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } }
+  @keyframes toastIn { from { transform: translate(-50%, 30px); opacity: 0; } }
   @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
-  .toast { animation-name: slideUpToast; }
-  @keyframes slideUpToast { from { transform: translate(-50%, 30px); opacity: 0; } }
+  @keyframes flip { 50% { transform: scaleX(0); } }
+  @keyframes squash { to { transform: scaleY(.4) translateY(40%); } }
+  @keyframes hammer { from { transform: rotate(-60deg); } to { transform: rotate(10deg); } }
 </style>
 </head>
 <body>
@@ -238,20 +308,32 @@
     <div class="path" id="path"></div>
   </section>
 
-  <!-- Bubble pop -->
-  <section id="play" class="screen card play hidden">
+  <!-- Stage intro -->
+  <section id="intro" class="screen card intro hidden">
+    <div class="cleared" id="introCleared"></div>
+    <div class="dots" id="introDots"></div>
+    <div class="stage-num" id="introNum"></div>
+    <div class="big-icon" id="introIcon"></div>
+    <h2 id="introName"></h2>
+    <p id="introDesc"></p>
+    <div class="intro-hearts" id="introHearts"></div>
+    <button class="btn primary big-btn" id="introGo">GO! ▶</button>
+  </section>
+
+  <!-- Mini-game shell -->
+  <section id="game" class="screen card play hidden">
     <div class="hud">
-      <span id="playLabel">Level 1</span>
+      <span id="stageLabel"></span>
       <span class="hearts" id="hearts"></span>
       <span class="streak" id="streak">🔥 0</span>
     </div>
-    <div class="bar"><div id="playBar"></div></div>
+    <div class="bar"><div id="stageBar"></div></div>
     <div class="qbox">
       <div class="avatar small" id="playAvatar"></div>
       <div class="question" id="question"></div>
     </div>
-    <div class="arena" id="arena"><div class="typed" id="typed"></div></div>
-    <div class="hint">Pop the bubble with the answer before it floats away! You can also type it and press Enter.</div>
+    <div class="stage" id="stage"></div>
+    <div class="hint" id="hint"></div>
   </section>
 
   <!-- Speed run -->
@@ -265,7 +347,7 @@
     <div class="qbox"><div class="avatar small" id="sprintAvatar"></div><div class="question" id="sprintQ"></div></div>
     <div class="answer" id="sprintAns"></div>
     <div class="feedback" id="sprintFb"></div>
-    <div class="pad" id="pad"></div>
+    <div class="pad" id="sprintPad"></div>
   </section>
 
   <!-- Results -->
@@ -302,8 +384,11 @@
   <div class="sheet card">
     <h3 id="sheetTitle"></h3>
     <div class="sheet-stars" id="sheetStars"></div>
+    <div class="stage-strip" id="sheetStrip"></div>
     <p id="sheetDesc"></p>
-    <button class="btn primary" id="sheetPlay">🫧 Bubble Pop</button>
+    <button class="btn primary" id="sheetPlay">▶ Start Level</button>
+    <div class="practice-label" id="practiceLabel">Practice one mini-game</div>
+    <div class="practice-row" id="sheetPractice"></div>
     <button class="btn secondary" id="sheetSprint">⚡ Speed Run</button>
     <button class="link-btn" id="sheetClose">Close</button>
   </div>
@@ -313,8 +398,17 @@
 (() => {
   // Level order: 5s first, then 10s, then the rest of the 1–12 tables, ending with a mixed boss level.
   const LEVELS = [5, 10, 2, 11, 3, 4, 9, 6, 7, 8, 12, 1, 'mix'];
-  const LIVES = 3;
+  // Every level is played as these stages, in order. Each stage is a different mini-game.
+  const STAGE_ORDER = ['bubble', 'mole', 'match', 'rocket'];
+  const STAGES = {
+    bubble: { icon: '🫧', name: 'Bubble Pop',   desc: 'Pop the bubble with the answer before it floats away!', hint: 'Tap the right bubble — or type the answer and press Enter.' },
+    mole:   { icon: '🔨', name: 'Mole Bonk',    desc: 'Moles pop up holding numbers. Bonk the one with the answer — wrong moles cost a heart!', hint: 'Tap the mole with the answer — or type it and press Enter.' },
+    match:  { icon: '🃏', name: 'Memory Match', desc: 'Flip two cards at a time. Match each fact with its answer!', hint: 'Find a fact card and its answer card.' },
+    rocket: { icon: '🚀', name: 'Rocket Race',  desc: 'Every right answer blasts your rocket forward. Beat the alien to the finish line!', hint: 'Type the answer — it goes in by itself.' }
+  };
+  const HEARTS = 5;
   const BOSS_FACTS = 15;
+  const RACE_GOAL = 8;
   const SPRINT_SECONDS = 60;
   const DAILY_GOAL = 40;
   const MASTER_MS = 3000;
@@ -333,7 +427,9 @@
   const rand = n => Math.floor(Math.random() * n);
   const pick = a => a[rand(a.length)];
   const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = rand(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const range = (a, b) => { const r = []; for (let i = a; i <= b; i++) r.push(i); return r; };
   const starStr = n => '★'.repeat(n) + '☆'.repeat(3 - n);
+  const mk = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
 
   // ---------- Save data ----------
   function freshSave() {
@@ -370,7 +466,7 @@
     const k = factKey(a, b);
     const f = save.facts[k] || { s: 0, c: 0, b: 0 };
     f.s++;
-    if (ok) { f.c++; if (!f.b || ms < f.b) f.b = Math.round(ms); }
+    if (ok) { f.c++; if (Number.isFinite(ms) && (!f.b || ms < f.b)) f.b = Math.round(ms); }
     save.facts[k] = f;
   }
   function factStatus(a, b) {
@@ -410,9 +506,12 @@
   let ac = null;
   const SOUNDS = {
     pop:   [[660, 990], .06, 'triangle', .15],
+    bonk:  [[180, 120], .07, 'square', .12],
+    flip:  [[520], .04, 'triangle', .08],
     wrong: [[220, 150], .13, 'sawtooth', .07],
     miss:  [[330, 260], .12, 'sine', .1],
     coin:  [[988, 1319], .07, 'square', .05],
+    zoom:  [[300, 450, 700], .05, 'sawtooth', .05],
     win:   [[523, 659, 784, 1047], .12, 'triangle', .15],
     lose:  [[392, 330, 262], .18, 'triangle', .12],
     tick:  [[880], .04, 'sine', .05]
@@ -441,29 +540,70 @@
   let toastTimer = null;
   function toast(msg) {
     document.querySelectorAll('.toast').forEach(t => t.remove());
-    const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+    const t = mk('div', 'toast'); t.textContent = msg;
     document.body.appendChild(t);
     clearTimeout(toastTimer); toastTimer = setTimeout(() => t.remove(), 2400);
   }
   function banner(msg) {
-    const b = document.createElement('div'); b.className = 'banner'; b.textContent = msg;
-    document.body.appendChild(b); setTimeout(() => b.remove(), 1200);
+    const b = mk('div', 'banner'); b.textContent = msg;
+    document.body.appendChild(b); setTimeout(() => b.remove(), 1300);
   }
   function confetti() {
     const colors = ['#f59e0b', '#22c55e', '#3b82f6', '#ec4899', '#a855f7', '#facc15'];
     for (let i = 0; i < 80; i++) {
-      const c = document.createElement('div'); c.className = 'confetti';
+      const c = mk('div', 'confetti');
       c.style.left = Math.random() * 100 + 'vw'; c.style.background = pick(colors);
       c.style.animationDuration = 1.5 + Math.random() * 2 + 's'; c.style.animationDelay = Math.random() * .5 + 's';
       document.body.appendChild(c); setTimeout(() => c.remove(), 4500);
     }
   }
+  // position of an element's centre, relative to the stage box (for sparks / floating coins)
+  function stagePoint(el) {
+    const sr = $('stage').getBoundingClientRect(), r = el.getBoundingClientRect();
+    return [r.left - sr.left + r.width / 2, r.top - sr.top + r.height / 2];
+  }
+  function sparks(x, y) {
+    for (let i = 0; i < 12; i++) {
+      const s = mk('div', 'spark');
+      const ang = (i / 12) * Math.PI * 2, dist = 40 + Math.random() * 30;
+      s.style.left = x - 5 + 'px'; s.style.top = y - 5 + 'px';
+      s.style.background = pick(['#fff', '#fde047', '#a5f3fc', '#86efac']);
+      s.style.setProperty('--dx', Math.cos(ang) * dist + 'px'); s.style.setProperty('--dy', Math.sin(ang) * dist + 'px');
+      $('stage').appendChild(s); setTimeout(() => s.remove(), 650);
+    }
+  }
+  function floater(x, y, text) {
+    const f = mk('div', 'floater'); f.textContent = text;
+    f.style.left = x - 24 + 'px'; f.style.top = y - 30 + 'px';
+    $('stage').appendChild(f); setTimeout(() => f.remove(), 950);
+  }
+  function makePad(container, onKey, compact) {
+    container.innerHTML = '';
+    container.className = 'pad' + (compact ? ' compact' : '');
+    ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'del', '0', 'go'].forEach(k => {
+      const b = mk('button', k === 'del' || k === 'go' ? k : '');
+      b.textContent = k === 'del' ? '⌫' : k === 'go' ? '✔' : k;
+      b.setAttribute('aria-label', k === 'del' ? 'Delete' : k === 'go' ? 'Submit' : k);
+      b.addEventListener('pointerdown', e => { e.preventDefault(); onKey(k); });
+      container.appendChild(b);
+    });
+  }
+  function choicesFor(a, b, n = 4) {
+    const ans = a * b;
+    const set = new Set([ans]);
+    const swapped = Number(String(ans).split('').reverse().join(''));
+    const cands = shuffle([a * (b + 1), a * (b - 1), (a + 1) * b, (a - 1) * b, ans + 1, ans - 1, ans + 10, ans - 10, a + b, swapped, ans + a, ans - b, ans + 2 * a]);
+    for (const c of cands) { if (set.size >= n) break; if (c > 0 && c <= 156) set.add(c); }
+    while (set.size < n) set.add(1 + rand(144));
+    return shuffle([...set]);
+  }
 
   // ---------- Screens ----------
   let screen = 'home';
-  let gen = 0; // bumps whenever a game starts/stops so stale timeouts do nothing
+  let gen = 0; // bumps whenever a game stops so stale timers do nothing
+  function later(fn, ms) { const g = gen; return setTimeout(() => { if (g === gen) fn(); }, ms); }
   function show(id) {
-    if (screen === 'play' && id !== 'play') stopBubbles();
+    if (screen === 'game' && id !== 'game') stopStage();
     if (screen === 'sprint' && id !== 'sprint') stopSprint();
     screen = id;
     document.querySelectorAll('.screen').forEach(s => s.classList.toggle('hidden', s.id !== id));
@@ -492,15 +632,13 @@
     const cur = currentLevel();
     LEVELS.forEach((t, i) => {
       const unlocked = isUnlocked(i);
-      const wrap = document.createElement('div');
-      wrap.className = 'node-wrap' + (unlocked ? '' : ' locked-wrap');
+      const wrap = mk('div', 'node-wrap' + (unlocked ? '' : ' locked-wrap'));
       wrap.style.transform = `translateX(${Math.round(Math.sin(i * 0.9) * 70)}px)`;
-      const n = document.createElement('button');
-      n.className = 'node' + (t === 'mix' ? ' boss' : '') + (unlocked ? '' : ' locked') + (i === cur ? ' current' : '');
+      const n = mk('button', 'node' + (t === 'mix' ? ' boss' : '') + (unlocked ? '' : ' locked') + (i === cur ? ' current' : ''));
       n.innerHTML = (unlocked ? (t === 'mix' ? '👑' : `×${t}`) : '🔒') + (i === cur ? `<span class="me">${save.avatar}</span>` : '');
       n.setAttribute('aria-label', `Level ${i + 1}: ${tableName(t)}${unlocked ? '' : ' (locked)'}`);
       n.onclick = unlocked ? () => openSheet(i) : () => toast('🔒 Beat the level before this one to unlock it!');
-      const s = document.createElement('div'); s.className = 'node-stars'; s.textContent = starStr(save.stars[i]);
+      const s = mk('div', 'node-stars'); s.textContent = starStr(save.stars[i]);
       wrap.append(n, s);
       path.appendChild(wrap);
     });
@@ -513,235 +651,485 @@
   function openSheet(i) {
     sheetLevel = i;
     const t = LEVELS[i];
+    const earned = save.stars[i] > 0;
     $('sheetTitle').textContent = `Level ${i + 1} · ${tableName(t)}`;
     $('sheetStars').textContent = starStr(save.stars[i]);
-    $('sheetDesc').textContent = t === 'mix'
-      ? `${BOSS_FACTS} random facts from 1–12. Bubbles start fast!`
-      : `Pop the bubble with the right answer for every ×${t} fact from 1 to 12. Bubbles speed up as your streak grows!`;
+    $('sheetStrip').textContent = STAGE_ORDER.map(s => STAGES[s].icon).join(' ➜ ') + ' ➜ 🏆';
+    $('sheetDesc').textContent = `${STAGE_ORDER.length} stages, ${HEARTS} hearts. Clear every stage to win the level!`;
+    const row = $('sheetPractice'); row.innerHTML = '';
+    STAGE_ORDER.forEach(s => {
+      const b = mk('button', 'btn secondary', `<span>${STAGES[s].icon}</span>${STAGES[s].name}`);
+      b.disabled = !earned;
+      b.onclick = () => startRun(i, s);
+      row.appendChild(b);
+    });
+    $('practiceLabel').textContent = earned ? 'Practice one mini-game' : 'Earn a ⭐ to practice single mini-games';
     const sb = $('sheetSprint');
-    if (save.stars[i] > 0) {
-      sb.disabled = false;
-      sb.textContent = `⚡ Speed Run${save.sprintBest[i] ? ` (best: ${save.sprintBest[i]})` : ''}`;
-    } else {
-      sb.disabled = true;
-      sb.textContent = '⚡ Speed Run (earn a ⭐ first)';
-    }
+    sb.disabled = !earned;
+    sb.textContent = earned ? `⚡ Speed Run${save.sprintBest[i] ? ` (best: ${save.sprintBest[i]})` : ''}` : '⚡ Speed Run (earn a ⭐ first)';
     $('sheet').classList.remove('hidden');
   }
 
-  // ---------- Bubble Pop ----------
-  let play = null, raf = null, lastT = 0, bubbles = [], frozen = true;
+  // ---------- Level runs (a level = a series of mini-game stages) ----------
+  let run = null, cleanup = null, keyHandler = null;
 
-  function buildFacts(t) {
-    if (t === 'mix') {
-      const out = [];
-      while (out.length < BOSS_FACTS) {
-        const a = 2 + rand(11), b = 2 + rand(11); // boss skips the ×1 freebies
-        if (!out.some(([x, y]) => x === a && y === b)) out.push([a, b]);
-      }
-      return out;
+  function orient(t, n) { return Math.random() < .5 ? [t, n] : [n, t]; }
+  function mixFacts(n, distinctProducts) {
+    const out = [];
+    while (out.length < n) {
+      const a = 2 + rand(11), b = 2 + rand(11);
+      if (out.some(([x, y]) => (x * y === a * b) && (distinctProducts || (x === a && y === b) || (x === b && y === a)))) continue;
+      out.push([a, b]);
     }
-    return shuffle([...Array(12)].map((_, i) => i + 1)).map(n => (Math.random() < .5 ? [t, n] : [n, t]));
+    return out;
   }
-
-  function choicesFor(a, b) {
-    const ans = a * b;
-    const set = new Set([ans]);
-    const swapped = Number(String(ans).split('').reverse().join(''));
-    const cands = shuffle([a * (b + 1), a * (b - 1), (a + 1) * b, (a - 1) * b, ans + 1, ans - 1, ans + 10, ans - 10, a + b, swapped, ans + a, ans - b]);
-    for (const c of cands) { if (set.size >= 4) break; if (c > 0 && c <= 156) set.add(c); }
-    while (set.size < 4) set.add(Math.max(1, ans + rand(20) - 10) || 1 + rand(144));
-    return shuffle([...set]);
-  }
-
-  function startLevel(i) {
-    gen++;
-    const t = LEVELS[i];
-    play = {
-      level: i, queue: buildFacts(t), done: 0, hearts: LIVES, streak: 0, best: 0,
-      coins: 0, missed: [], typed: '', answer: 0, fact: null, qStart: 0, boss: t === 'mix'
+  function planFacts(t) {
+    if (t === 'mix') return { bubble: mixFacts(8), mole: mixFacts(7), match: mixFacts(6, true) };
+    const nums = shuffle(range(1, 12));
+    return {
+      bubble: nums.slice(0, 6).map(n => orient(t, n)),
+      mole: nums.slice(6).map(n => orient(t, n)),
+      match: shuffle(range(1, 12)).slice(0, 6).map(n => orient(t, n))
     };
-    play.total = play.queue.length;
-    $('playLabel').textContent = t === 'mix' ? `Lv ${i + 1} 👑` : `Lv ${i + 1} · ×${t}`;
+  }
+
+  function startRun(level, only) {
+    const t = LEVELS[level];
+    run = {
+      level, t, stages: only ? [only] : STAGE_ORDER.slice(), si: 0, practice: !!only,
+      hearts: HEARTS, streak: 0, best: 0, coins: 0, answered: 0, missed: [], plan: planFacts(t)
+    };
+    showIntro();
+  }
+
+  function showIntro() {
+    const s = run.stages[run.si], info = STAGES[s];
+    $('introCleared').textContent = run.si > 0 ? `✅ ${STAGES[run.stages[run.si - 1]].name} cleared!` : run.practice ? 'Practice mode' : `Level ${run.level + 1} · ${tableName(run.t)}`;
+    const dots = $('introDots'); dots.innerHTML = '';
+    run.stages.forEach((st, k) => dots.appendChild(mk('div', 'dot' + (k < run.si ? ' done' : k === run.si ? ' now' : ''), k < run.si ? '✓' : STAGES[st].icon)));
+    if (!run.practice) dots.appendChild(mk('div', 'dot', '🏆'));
+    $('introNum').textContent = run.practice ? 'Mini-game' : `Stage ${run.si + 1} of ${run.stages.length}`;
+    $('introIcon').textContent = info.icon;
+    $('introName').textContent = info.name;
+    $('introDesc').textContent = info.desc;
+    $('introHearts').textContent = '❤️'.repeat(run.hearts) + '🤍'.repeat(HEARTS - run.hearts);
+    show('intro');
+    if (run.si > 0) sound('coin');
+  }
+
+  function goStage() {
+    if (screen !== 'intro') return;
+    const s = run.stages[run.si], info = STAGES[s];
+    show('game');
+    $('stageLabel').textContent = `${run.practice ? '' : (run.si + 1) + '/' + run.stages.length + ' '}${info.icon}`;
     $('playAvatar').innerHTML = avatarHTML();
-    show('play');
-    renderPlayHud();
-    lastT = 0;
-    cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(loop);
-    const g = gen;
-    setTimeout(() => g === gen && nextFact(), 350);
+    $('stage').innerHTML = '';
+    $('hint').textContent = info.hint;
+    setQuestion('');
+    setProgress(0);
+    renderHud();
+    MINI[s](run.plan[s] || []);
   }
 
-  function stopBubbles() {
+  function stopStage() {
     gen++;
-    cancelAnimationFrame(raf); raf = null; frozen = true;
-    bubbles.forEach(b => b.el.remove()); bubbles = [];
+    if (cleanup) { try { cleanup(); } catch (e) {} cleanup = null; }
+    keyHandler = null;
   }
 
-  function renderPlayHud() {
-    $('hearts').textContent = '❤️'.repeat(play.hearts) + '🤍'.repeat(LIVES - play.hearts);
-    $('streak').textContent = `🔥 ${play.streak}`;
-    $('playBar').style.width = (play.done / play.total * 100) + '%';
+  function stageDone() {
+    stopStage();
+    run.si++;
+    if (run.si < run.stages.length) showIntro(); else finishRun();
   }
 
-  function setTyped(v) { play.typed = v; $('typed').textContent = v; }
-
-  function nextFact() {
-    if (play.hearts <= 0 || play.queue.length === 0) return finishLevel();
-    const [a, b] = play.fact = play.queue[0];
-    play.answer = a * b;
-    const q = $('question'); q.textContent = `${a} × ${b}`; q.className = 'question';
-    setTyped('');
-    const arena = $('arena');
-    bubbles.forEach(x => x.el.remove());
-    bubbles = choicesFor(a, b).map((v, i) => {
-      const el = document.createElement('button');
-      el.className = 'bubble';
-      el.textContent = v;
-      el.style.left = (12.5 + 25 * i) + '%';
-      el.setAttribute('aria-label', `Answer ${v}`);
-      const bub = { el, val: v, y: -90 - Math.random() * 80, phase: Math.random() * 6.28 };
-      el.addEventListener('pointerdown', e => { e.preventDefault(); tapBubble(bub); });
-      arena.appendChild(el);
-      return bub;
-    });
-    play.qStart = performance.now();
-    frozen = false;
+  function setQuestion(txt, cls) { const q = $('question'); q.textContent = txt; q.className = 'question' + (cls ? ' ' + cls : ''); }
+  function setProgress(f) { $('stageBar').style.width = Math.min(100, f * 100) + '%'; }
+  function renderHud() {
+    $('hearts').textContent = '❤️'.repeat(Math.max(0, run.hearts)) + '🤍'.repeat(HEARTS - Math.max(0, run.hearts));
+    $('streak').textContent = `🔥 ${run.streak}`;
   }
 
-  function crossTime() {
-    // seconds for a bubble to rise through the arena: gets faster as the streak grows
-    return Math.max(2.6, 7.5 - play.streak * 0.35 - (play.boss ? 1.2 : 0));
-  }
-
-  function loop(t) {
-    raf = requestAnimationFrame(loop);
-    const dt = lastT ? Math.min(.05, (t - lastT) / 1000) : 0;
-    lastT = t;
-    if (frozen || !play) return;
-    const H = $('arena').clientHeight;
-    const speed = H / crossTime();
-    for (const b of bubbles) {
-      b.y += speed * dt;
-      b.phase += dt * 2.2;
-      b.pos = `translate(calc(-50% + ${(Math.sin(b.phase) * 7).toFixed(1)}px), ${(-b.y).toFixed(1)}px)`;
-      b.el.style.transform = b.pos;
-    }
-    const right = bubbles.find(b => b.val === play.answer);
-    if (right && right.y > H) escaped();
-  }
-
-  function bubbleCenter(el) {
-    const ar = $('arena').getBoundingClientRect(), r = el.getBoundingClientRect();
-    return [r.left - ar.left + r.width / 2, r.top - ar.top + r.height / 2];
-  }
-
-  function sparks(el) {
-    const [x, y] = bubbleCenter(el);
-    const arena = $('arena');
-    for (let i = 0; i < 12; i++) {
-      const s = document.createElement('div'); s.className = 'spark';
-      const ang = (i / 12) * Math.PI * 2, dist = 40 + Math.random() * 30;
-      s.style.left = x - 5 + 'px'; s.style.top = y - 5 + 'px';
-      s.style.background = pick(['#fff', '#fde047', '#a5f3fc', '#86efac']);
-      s.style.setProperty('--dx', Math.cos(ang) * dist + 'px'); s.style.setProperty('--dy', Math.sin(ang) * dist + 'px');
-      arena.appendChild(s); setTimeout(() => s.remove(), 650);
-    }
-    return [x, y];
-  }
-
-  function floater(x, y, text) {
-    const f = document.createElement('div'); f.className = 'floater'; f.textContent = text;
-    f.style.left = x - 20 + 'px'; f.style.top = y - 30 + 'px';
-    $('arena').appendChild(f); setTimeout(() => f.remove(), 950);
-  }
-
-  function tapBubble(b) {
-    if (frozen || screen !== 'play') return;
-    frozen = true;
-    const ms = performance.now() - play.qStart;
-    if (b && b.val === play.answer) correct(b, ms); else wrong(b);
-  }
-
-  function requeue() {
-    const f = play.queue.shift();
-    play.queue.splice(Math.min(2, play.queue.length), 0, f);
-    const label = `${f[0]} × ${f[1]} = ${f[0] * f[1]}`;
-    if (!play.missed.includes(label)) play.missed.push(label);
-  }
-
-  function correct(b, ms) {
-    const [x, y] = sparks(b.el);
-    b.el.style.setProperty('--pos', b.pos || 'translate(-50%, 0)');
-    b.el.classList.add('pop');
-    bubbles.forEach(o => o !== b && o.el.classList.add('fade'));
-    play.streak++; play.best = Math.max(play.best, play.streak);
-    const earned = 10 + (ms < MASTER_MS ? 5 : 0) + (play.streak >= 5 ? 5 : 0);
-    play.coins += earned; addCoins(earned);
-    floater(x, y, `+${earned} 🪙`);
-    recordFact(play.fact[0], play.fact[1], true, ms);
+  // Shared "you got it" handler — returns coins earned.
+  function gotIt(a, b, ms, el) {
+    run.streak++; run.best = Math.max(run.best, run.streak); run.answered++;
+    const timed = Number.isFinite(ms);
+    const earned = 10 + (timed && ms < MASTER_MS ? 5 : 0) + (run.streak >= 5 ? 5 : 0);
+    run.coins += earned; addCoins(earned);
+    recordFact(a, b, true, ms);
     countDaily();
-    play.queue.shift(); play.done++;
-    $('question').classList.add('good');
-    $('question').textContent = `${play.fact[0]} × ${play.fact[1]} = ${play.answer}`;
+    if (el) { const [x, y] = stagePoint(el); sparks(x, y); floater(x, y, `+${earned} 🪙`); }
     react($('playAvatar'), 'bounce');
-    sound('pop');
-    if (play.streak > 0 && play.streak % 5 === 0) { banner(`🔥 ${play.streak} in a row! Faster bubbles!`); const s = $('streak'); s.classList.remove('hot'); void s.offsetWidth; s.classList.add('hot'); }
-    renderPlayHud(); persist();
-    const g = gen; setTimeout(() => g === gen && nextFact(), 520);
+    if (run.streak > 0 && run.streak % 5 === 0) {
+      banner(`🔥 ${run.streak} in a row!`);
+      const s = $('streak'); s.classList.remove('hot'); void s.offsetWidth; s.classList.add('hot');
+    }
+    renderHud(); persist();
+    return earned;
   }
-
-  function wrong(b) {
-    if (b) b.el.classList.add('wrongb');
-    const right = bubbles.find(o => o.val === play.answer);
-    if (right) right.el.classList.add('reveal');
-    bubbles.forEach(o => o !== b && o !== right && o.el.classList.add('fade'));
-    play.hearts--; play.streak = 0;
-    recordFact(play.fact[0], play.fact[1], false, 0);
-    requeue();
-    const q = $('question'); q.classList.add('bad'); q.textContent = `${play.fact[0]} × ${play.fact[1]} = ${play.answer}`;
+  // Shared "missed it" handler — returns true when out of hearts.
+  function missedIt(a, b, loseHeart) {
+    run.streak = 0;
+    if (a != null) {
+      recordFact(a, b, false, 0);
+      const label = `${a} × ${b} = ${a * b}`;
+      if (!run.missed.includes(label)) run.missed.push(label);
+    }
+    if (loseHeart) run.hearts--;
     react($('playAvatar'), 'sad');
-    sound('wrong');
-    renderPlayHud(); persist();
-    const g = gen; setTimeout(() => g === gen && nextFact(), 1500);
+    sound(loseHeart ? 'wrong' : 'miss');
+    renderHud(); persist();
+    return run.hearts <= 0;
   }
 
-  function escaped() {
-    frozen = true;
-    play.streak = 0;
-    recordFact(play.fact[0], play.fact[1], false, 0);
-    requeue();
-    const q = $('question'); q.classList.add('bad'); q.textContent = `Too slow! ${play.fact[0]} × ${play.fact[1]} = ${play.answer}`;
-    react($('playAvatar'), 'sad');
-    sound('miss');
-    renderPlayHud(); persist();
-    const g = gen; setTimeout(() => g === gen && nextFact(), 1500);
-  }
+  // ---------- Mini-games ----------
+  const MINI = {};
 
-  function finishLevel() {
-    const p = play, i = p.level;
-    stopBubbles();
-    const passed = p.hearts > 0 && p.done === p.total;
-    const stars = passed ? p.hearts : 0;
+  // 🫧 Bubble Pop: answers float up; tap the right one before it escapes.
+  MINI.bubble = facts => {
+    const arena = mk('div', 'arena'), typedEl = mk('div', 'typed');
+    arena.appendChild(typedEl);
+    $('stage').appendChild(arena);
+    const queue = facts.slice(), total = queue.length;
+    let done = 0, bubbles = [], frozen = true, fact = null, answer = 0, qStart = 0, raf = 0, lastT = 0, typed = '';
+    const setTyped = v => { typed = v; typedEl.textContent = v; };
+
+    function next() {
+      if (!queue.length) return stageDone();
+      fact = queue[0]; answer = fact[0] * fact[1];
+      setQuestion(`${fact[0]} × ${fact[1]}`);
+      setTyped('');
+      bubbles.forEach(b => b.el.remove());
+      bubbles = choicesFor(fact[0], fact[1]).map((v, i) => {
+        const el = mk('button', 'bubble'); el.textContent = v;
+        el.style.left = (12.5 + 25 * i) + '%';
+        el.setAttribute('aria-label', `Answer ${v}`);
+        const bub = { el, val: v, y: -90 - Math.random() * 80, phase: Math.random() * 6.28 };
+        el.addEventListener('pointerdown', e => { e.preventDefault(); tap(bub); });
+        arena.appendChild(el);
+        return bub;
+      });
+      qStart = performance.now();
+      frozen = false;
+    }
+    const crossTime = () => Math.max(2.6, 7.5 - run.streak * 0.35 - (run.t === 'mix' ? 1.2 : 0));
+    function loop(t) {
+      raf = requestAnimationFrame(loop);
+      const dt = lastT ? Math.min(.05, (t - lastT) / 1000) : 0;
+      lastT = t;
+      if (frozen) return;
+      const H = arena.clientHeight, speed = H / crossTime();
+      for (const b of bubbles) {
+        b.y += speed * dt; b.phase += dt * 2.2;
+        b.pos = `translate(calc(-50% + ${(Math.sin(b.phase) * 7).toFixed(1)}px), ${(-b.y).toFixed(1)}px)`;
+        b.el.style.transform = b.pos;
+      }
+      const right = bubbles.find(b => b.val === answer);
+      if (right && right.y > H) escaped();
+    }
+    function requeue() { const f = queue.shift(); queue.splice(Math.min(2, queue.length), 0, f); }
+    function tap(b) {
+      if (frozen) return;
+      frozen = true;
+      if (b && b.val === answer) {
+        gotIt(fact[0], fact[1], performance.now() - qStart, b.el);
+        b.el.style.setProperty('--pos', b.pos || 'translate(-50%, 0)');
+        b.el.classList.add('pop');
+        bubbles.forEach(o => o !== b && o.el.classList.add('fade'));
+        sound('pop');
+        setQuestion(`${fact[0]} × ${fact[1]} = ${answer}`, 'good');
+        queue.shift(); done++; setProgress(done / total);
+        later(next, 520);
+      } else {
+        if (b) b.el.classList.add('wrongb');
+        const right = bubbles.find(o => o.val === answer);
+        if (right) right.el.classList.add('reveal');
+        bubbles.forEach(o => o !== b && o !== right && o.el.classList.add('fade'));
+        setQuestion(`${fact[0]} × ${fact[1]} = ${answer}`, 'bad');
+        const dead = missedIt(fact[0], fact[1], true);
+        requeue();
+        later(dead ? finishRun : next, 1500);
+      }
+    }
+    function escaped() {
+      frozen = true;
+      setQuestion(`Too slow! ${fact[0]} × ${fact[1]} = ${answer}`, 'bad small');
+      missedIt(fact[0], fact[1], false);
+      requeue();
+      later(next, 1500);
+    }
+    keyHandler = e => {
+      if (/^[0-9]$/.test(e.key) && typed.length < 3) setTyped(typed + e.key);
+      else if (e.key === 'Backspace') setTyped(typed.slice(0, -1));
+      else if (e.key === 'Enter' && typed && !frozen) tap(bubbles.find(b => String(b.val) === typed) || null);
+    };
+    cleanup = () => cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(loop);
+    later(next, 300);
+  };
+
+  // 🔨 Mole Bonk: moles pop out of holes holding numbers; bonk the one with the answer.
+  MINI.mole = facts => {
+    const grid = mk('div', 'moles'), typedEl = mk('div', 'typed');
+    $('stage').append(grid, typedEl);
+    const holes = range(0, 8).map(() => {
+      const hole = mk('div', 'hole');
+      const btn = mk('button', 'mole', '<span class="sign"></span><span class="critter">🐹</span>');
+      hole.appendChild(btn); grid.appendChild(hole);
+      const h = { hole, btn, sign: btn.querySelector('.sign'), up: false, val: 0, until: 0 };
+      btn.addEventListener('pointerdown', e => { e.preventDefault(); bonk(h); });
+      return h;
+    });
+    let idx = 0, fact = null, answer = 0, frozen = true, nextSpawn = 0, lastAnswerAt = 0, qStart = 0, typed = '', distract = [];
+    const setTyped = v => { typed = v; typedEl.textContent = v; };
+
+    function hide(h) { h.up = false; h.hole.classList.remove('up', 'bonk', 'oops'); }
+    function popUp(h, val, now) {
+      h.val = val; h.sign.textContent = val; h.up = true;
+      h.hole.classList.remove('bonk', 'oops'); h.hole.classList.add('up');
+      h.until = now + Math.max(1100, 2300 - run.streak * 90 - (run.t === 'mix' ? 300 : 0));
+      if (val === answer) lastAnswerAt = now;
+    }
+    function tick() {
+      const now = performance.now();
+      holes.forEach(h => { if (h.up && now > h.until && !h.hole.classList.contains('bonk')) hide(h); });
+      if (frozen || now < nextSpawn) return;
+      const ups = holes.filter(h => h.up);
+      if (ups.length >= 3) return;
+      const empty = holes.filter(h => !h.up);
+      const answerUp = ups.some(h => h.val === answer);
+      const useAnswer = !answerUp && (now - lastAnswerAt > 1400 || Math.random() < .35);
+      const shown = new Set(ups.map(h => h.val));
+      const val = useAnswer ? answer : (distract.find(d => !shown.has(d)) ?? pick(distract));
+      distract.push(distract.shift());
+      popUp(pick(empty), val, now);
+      nextSpawn = now + 380 + rand(380);
+    }
+    function next() {
+      if (idx >= facts.length) return stageDone();
+      fact = facts[idx]; answer = fact[0] * fact[1];
+      distract = choicesFor(fact[0], fact[1], 6).filter(v => v !== answer);
+      setQuestion(`${fact[0]} × ${fact[1]}`);
+      setTyped('');
+      holes.forEach(hide);
+      lastAnswerAt = performance.now() - 900;
+      nextSpawn = performance.now() + 200;
+      qStart = performance.now();
+      frozen = false;
+    }
+    function hammer(h) {
+      const [x, y] = stagePoint(h.btn);
+      const ham = mk('div', 'hammer'); ham.textContent = '🔨';
+      ham.style.left = x - 4 + 'px'; ham.style.top = y - 50 + 'px';
+      $('stage').appendChild(ham); setTimeout(() => ham.remove(), 300);
+    }
+    function bonk(h) {
+      if (frozen || !h.up) return;
+      hammer(h);
+      if (h.val === answer) {
+        frozen = true;
+        h.hole.classList.add('bonk');
+        sound('bonk'); setTimeout(() => sound('pop'), 80);
+        gotIt(fact[0], fact[1], performance.now() - qStart, h.btn);
+        setQuestion(`${fact[0]} × ${fact[1]} = ${answer}`, 'good');
+        idx++; setProgress(idx / facts.length);
+        later(() => { holes.forEach(hide); later(next, 250); }, 450);
+      } else {
+        h.hole.classList.add('oops');
+        h.until = performance.now() + 500;
+        setQuestion(`Not ${h.val}! ${fact[0]} × ${fact[1]} = ${answer}`, 'bad small');
+        const dead = missedIt(fact[0], fact[1], true);
+        if (dead) { frozen = true; later(finishRun, 1300); }
+        else later(() => setQuestion(`${fact[0]} × ${fact[1]}`), 1300);
+      }
+    }
+    keyHandler = e => {
+      if (/^[0-9]$/.test(e.key) && typed.length < 3) setTyped(typed + e.key);
+      else if (e.key === 'Backspace') setTyped(typed.slice(0, -1));
+      else if (e.key === 'Enter' && typed) {
+        const h = holes.find(x => x.up && String(x.val) === typed);
+        setTyped('');
+        if (h) bonk(h);
+      }
+    };
+    const timer = setInterval(tick, 80);
+    cleanup = () => clearInterval(timer);
+    later(next, 300);
+  };
+
+  // 🃏 Memory Match: flip cards to pair each fact with its answer.
+  MINI.match = facts => {
+    setQuestion('Match the pairs!', 'small');
+    const grid = mk('div', 'cards');
+    $('stage').appendChild(grid);
+    const cards = shuffle(facts.flatMap(([a, b], k) => [{ k, txt: `${a}×${b}` }, { k, txt: String(a * b) }]));
+    let open = [], matched = 0, flips = 0, lock = false;
+    cards.forEach(c => {
+      c.el = mk('button', 'mcard', '?');
+      c.el.setAttribute('aria-label', 'Hidden card');
+      c.el.addEventListener('pointerdown', e => { e.preventDefault(); flip(c); });
+      grid.appendChild(c.el);
+    });
+    function face(c, up) {
+      c.el.classList.remove('flip'); void c.el.offsetWidth; c.el.classList.add('flip');
+      setTimeout(() => { c.el.textContent = up ? c.txt : '?'; c.el.classList.toggle('open', up); }, 120);
+    }
+    function flip(c) {
+      if (lock || c.done || open.includes(c)) return;
+      sound('flip');
+      face(c, true);
+      open.push(c);
+      if (open.length < 2) return;
+      flips++;
+      lock = true;
+      const [x, y] = open;
+      if (x.k === y.k) {
+        const [a, b] = facts[x.k];
+        later(() => {
+          x.done = y.done = true;
+          x.el.classList.add('matched'); y.el.classList.add('matched');
+          gotIt(a, b, Infinity, y.el);
+          sound('pop');
+          setQuestion(`${a} × ${b} = ${a * b}`, 'good');
+          matched++; setProgress(matched / facts.length);
+          open = []; lock = false;
+          if (matched === facts.length) {
+            if (flips <= facts.length + 2) { banner('🧠 Super memory! +20 🪙'); addCoins(20); run.coins += 20; }
+            later(stageDone, 1100);
+          }
+        }, 350);
+      } else {
+        later(() => { x.el.classList.add('nomatch'); y.el.classList.add('nomatch'); sound('miss'); }, 300);
+        later(() => {
+          [x, y].forEach(c => { c.el.classList.remove('nomatch'); face(c, false); });
+          open = []; lock = false;
+        }, 1100);
+      }
+      $('hint').textContent = `Flips: ${flips} — match all ${facts.length} pairs in ${facts.length + 2} or fewer for a bonus!`;
+    }
+    $('hint').textContent = `Match all ${facts.length} pairs in ${facts.length + 2} flips or fewer for a bonus!`;
+  };
+
+  // 🚀 Rocket Race: type answers to fly forward; beat the alien to the finish line.
+  MINI.rocket = () => {
+    const track = mk('div', 'track',
+      `<div class="lane"><span class="racer" id="meRacer">${save.avatar}🚀</span></div>
+       <div class="lane"><span class="racer rival" id="rivalRacer">👾🛸</span></div>
+       <div class="finish">🏁</div>`);
+    const ansEl = mk('div', 'answer'), pad = mk('div');
+    $('stage').append(track, ansEl, pad);
+    const me = track.querySelector('#meRacer'), rival = track.querySelector('#rivalRacer');
+    const perAnswer = run.t === 'mix' ? 4.2 : Math.max(3.6, 5.5 - run.level * 0.12); // seconds the alien takes per step
+    let pos = 0, rivalStart = 0, fact = null, input = '', locked = true, qStart = 0, over = false;
+    const place = (el, frac) => { el.style.left = `calc((100% - 84px) * ${Math.min(1, frac)})`; };
+
+    function nextFact() {
+      let a, b;
+      do {
+        if (run.t === 'mix') { a = 2 + rand(11); b = 2 + rand(11); }
+        else [a, b] = orient(run.t, 1 + rand(12));
+      } while (fact && fact[0] === a && fact[1] === b);
+      fact = [a, b]; input = ''; locked = false; qStart = performance.now();
+      setQuestion(`${a} × ${b}`);
+      ansEl.textContent = ''; ansEl.className = 'answer';
+    }
+    function startRace() {
+      pos = 0; over = false; place(me, 0); place(rival, 0); setProgress(0);
+      rivalStart = performance.now() + 600;
+      nextFact();
+    }
+    function tick() {
+      if (over) return;
+      const frac = Math.max(0, (performance.now() - rivalStart) / (perAnswer * RACE_GOAL * 1000));
+      place(rival, frac);
+      if (frac >= 1) lostRace();
+    }
+    function lostRace() {
+      over = true; locked = true;
+      setQuestion('👾 The alien won!', 'bad small');
+      sound('lose');
+      const dead = missedIt(null, null, true);
+      later(() => {
+        if (dead) return finishRun();
+        setQuestion('Race again! 🔁', 'small');
+        later(startRace, 900);
+      }, 1500);
+    }
+    function key(k) {
+      if (locked || over) return;
+      if (k === 'del') input = input.slice(0, -1);
+      else if (k === 'go') return submit();
+      else if (input.length < 3) {
+        input += k;
+        if (input.length === String(fact[0] * fact[1]).length) { ansEl.textContent = input; return submit(); }
+      }
+      ansEl.textContent = input;
+    }
+    function submit() {
+      if (!input) return;
+      locked = true;
+      const [a, b] = fact, right = a * b;
+      if (Number(input) === right) {
+        ansEl.className = 'answer good';
+        pos++; place(me, pos / RACE_GOAL); setProgress(pos / RACE_GOAL);
+        gotIt(a, b, performance.now() - qStart, me);
+        sound('zoom');
+        if (pos >= RACE_GOAL) {
+          over = true;
+          setQuestion('🏁 You won the race!', 'good small');
+          banner('🏁 You won! +20 🪙'); addCoins(20); run.coins += 20;
+          sound('win');
+          later(stageDone, 1500);
+        } else later(nextFact, 250);
+      } else {
+        ansEl.className = 'answer bad';
+        setQuestion(`${a} × ${b} = ${right}`, 'bad');
+        missedIt(a, b, false);
+        later(nextFact, 1100);
+      }
+    }
+    makePad(pad, key, true);
+    keyHandler = e => {
+      if (/^[0-9]$/.test(e.key)) key(e.key);
+      else if (e.key === 'Backspace') key('del');
+      else if (e.key === 'Enter') key('go');
+    };
+    const timer = setInterval(tick, 50);
+    cleanup = () => clearInterval(timer);
+    setQuestion('Get ready… 3, 2, 1!', 'small');
+    later(startRace, 900);
+  };
+
+  function finishRun() {
+    const r = run, i = r.level;
+    stopStage();
+    const cleared = r.hearts > 0 && r.si >= r.stages.length;
+    const stats = [[r.answered, 'facts right'], [`+${r.coins}`, 'coins'], [r.best, 'best streak']];
+    if (r.practice) {
+      const s = r.stages[0];
+      showResult({
+        title: cleared ? `${STAGES[s].icon} ${STAGES[s].name} cleared!` : 'Out of hearts! 💔', stars: '', stats, missed: r.missed,
+        btns: [['🗺️ Map', 'secondary', renderMap], ['↻ Again', 'green', () => startRun(i, s)], ['▶ Full level', 'primary', () => startRun(i)]],
+        happy: cleared
+      });
+      sound(cleared ? 'win' : 'lose');
+      if (cleared) confetti();
+      return;
+    }
+    const stars = !cleared ? 0 : r.hearts >= 5 ? 3 : r.hearts >= 3 ? 2 : 1;
     const wasLocked = i + 1 < LEVELS.length && !isUnlocked(i + 1);
     let bonus = 0;
-    if (passed) { bonus = stars * 20; addCoins(bonus); }
+    if (cleared) { bonus = stars * 25; addCoins(bonus); r.coins += bonus; }
     save.stars[i] = Math.max(save.stars[i], stars);
     persist();
-
-    const title = !passed ? 'Out of hearts! 💔'
+    const title = !cleared ? `Out of hearts on stage ${r.si + 1}! 💔`
       : i === LEVELS.length - 1 ? '👑 You beat the Boss!'
-      : wasLocked ? '🎉 New level unlocked!' : 'Level complete!';
-    const btns = [['🗺️ Map', 'secondary', renderMap], ['↻ Again', 'secondary', () => startLevel(i)]];
+      : wasLocked ? '🎉 New level unlocked!' : '🏆 Level complete!';
+    const btns = [['🗺️ Map', 'secondary', renderMap], ['↻ Again', 'secondary', () => startRun(i)]];
     if (save.stars[i] > 0) btns.push(['⚡ Speed Run', 'green', () => startSprint(i)]);
-    if (passed && i + 1 < LEVELS.length) btns.push(['Next ▶', 'primary', () => startLevel(i + 1)]);
-    showResult({
-      title, stars: starStr(stars),
-      stats: [[`${p.done}/${p.total}`, 'facts popped'], [`+${p.coins + bonus}`, 'coins'], [p.best, 'best streak']],
-      missed: p.missed, btns, happy: passed
-    });
-    if (passed) { sound('win'); confetti(); } else sound('lose');
+    if (cleared && i + 1 < LEVELS.length) btns.push(['Next ▶', 'primary', () => startRun(i + 1)]);
+    showResult({ title, stars: starStr(stars), stats, missed: r.missed, btns, happy: cleared });
+    if (cleared) { sound('win'); confetti(); } else sound('lose');
   }
 
   // ---------- Speed Run ----------
@@ -763,7 +1151,7 @@
     let a, b;
     do {
       if (sp.t === 'mix') { a = 1 + rand(12); b = 1 + rand(12); }
-      else { const n = 1 + rand(12); [a, b] = Math.random() < .5 ? [sp.t, n] : [n, sp.t]; }
+      else [a, b] = orient(sp.t, 1 + rand(12));
     } while (sp.fact && sp.fact[0] === a && sp.fact[1] === b);
     sp.fact = [a, b]; sp.input = ''; sp.locked = false; sp.qStart = performance.now();
     $('sprintQ').textContent = `${a} × ${b}`;
@@ -789,7 +1177,6 @@
     else if (k === 'go') return submitSprint();
     else if (sp.input.length < 3) {
       sp.input += k;
-      // auto-submit once enough digits are typed for the correct answer
       if (sp.input.length === String(sp.fact[0] * sp.fact[1]).length) { $('sprintAns').textContent = sp.input; return submitSprint(); }
     }
     $('sprintAns').textContent = sp.input;
@@ -799,14 +1186,13 @@
     if (sp.input === '') return;
     sp.locked = true;
     const [a, b] = sp.fact, right = a * b, ms = performance.now() - sp.qStart;
-    const g = gen;
     if (Number(sp.input) === right) {
       sp.count++; sp.coins += 2; addCoins(2);
       recordFact(a, b, true, ms); countDaily();
       $('sprintAns').className = 'answer good';
       react($('sprintAvatar'), 'bounce');
       sound('pop'); persist();
-      setTimeout(() => g === gen && nextSprint(), 220);
+      later(nextSprint, 220);
     } else {
       recordFact(a, b, false, 0);
       const label = `${a} × ${b} = ${right}`;
@@ -815,7 +1201,7 @@
       $('sprintFb').textContent = `${a} × ${b} = ${right}`;
       react($('sprintAvatar'), 'sad');
       sound('wrong'); persist();
-      setTimeout(() => g === gen && nextSprint(), 1100);
+      later(nextSprint, 1100);
     }
   }
 
@@ -830,7 +1216,7 @@
       stars: '',
       stats: [[s.count, 'correct'], [save.sprintBest[i], 'best'], [`+${s.coins}`, 'coins']],
       missed: s.missed,
-      btns: [['🗺️ Map', 'secondary', renderMap], ['🫧 Bubble Pop', 'secondary', () => startLevel(i)], ['⚡ Again', 'green', () => startSprint(i)]],
+      btns: [['🗺️ Map', 'secondary', renderMap], ['▶ Level', 'secondary', () => startRun(i)], ['⚡ Again', 'green', () => startSprint(i)]],
       happy: s.count > 0
     });
     sound(newBest ? 'win' : 'coin');
@@ -847,9 +1233,7 @@
     $('missed').classList.toggle('hidden', missed.length === 0);
     $('missedList').innerHTML = missed.map(m => `<li>${m}</li>`).join('');
     const row = $('resultBtns'); row.innerHTML = '';
-    btns.forEach(([label, cls, fn]) => {
-      const b = document.createElement('button'); b.className = 'btn ' + cls; b.textContent = label; b.onclick = fn; row.appendChild(b);
-    });
+    btns.forEach(([label, cls, fn]) => { const b = mk('button', 'btn ' + cls); b.textContent = label; b.onclick = fn; row.appendChild(b); });
     show('result');
     react($('resultAvatar'), happy ? 'bounce' : 'sad');
   }
@@ -862,9 +1246,8 @@
       items.forEach(it => {
         const owned = save.owned.includes(it.e);
         const equipped = (kind === 'avatar' ? save.avatar : save.hat) === it.e;
-        const b = document.createElement('button');
-        b.className = 'item' + (equipped ? ' equipped' : '') + (!owned && save.coins < it.p ? ' cant' : '');
-        b.innerHTML = `<span class="e">${it.e || '🚫'}</span><span class="p">${equipped ? 'Wearing' : owned ? 'Use' : '🪙 ' + it.p}</span>`;
+        const b = mk('button', 'item' + (equipped ? ' equipped' : '') + (!owned && save.coins < it.p ? ' cant' : ''),
+          `<span class="e">${it.e || '🚫'}</span><span class="p">${equipped ? 'Wearing' : owned ? 'Use' : '🪙 ' + it.p}</span>`);
         b.onclick = () => {
           if (!owned) {
             if (save.coins < it.p) { toast(`You need ${it.p - save.coins} more 🪙 — keep playing!`); return; }
@@ -885,7 +1268,7 @@
   // ---------- Fact grid ----------
   function renderFacts() {
     const g = $('factGrid'); g.innerHTML = '';
-    const cell = (txt, cls) => { const d = document.createElement('div'); d.textContent = txt; if (cls) d.className = cls; g.appendChild(d); };
+    const cell = (txt, cls) => { const d = mk('div', cls); d.textContent = txt; g.appendChild(d); };
     cell('×', 'hd');
     for (let b = 1; b <= 12; b++) cell(b, 'hd');
     for (let a = 1; a <= 12; a++) {
@@ -896,28 +1279,18 @@
   }
 
   // ---------- Wiring ----------
-  ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'del', '0', 'go'].forEach(k => {
-    const b = document.createElement('button');
-    b.textContent = k === 'del' ? '⌫' : k === 'go' ? '✔' : k;
-    if (k === 'del' || k === 'go') b.className = k;
-    b.setAttribute('aria-label', k === 'del' ? 'Delete' : k === 'go' ? 'Submit' : k);
-    b.addEventListener('pointerdown', e => { e.preventDefault(); sprintPress(k); });
-    $('pad').appendChild(b);
-  });
+  makePad($('sprintPad'), sprintPress);
 
   document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && (screen === 'game' || screen === 'sprint' || screen === 'intro')) return renderMap();
     if (screen === 'sprint') {
       if (/^[0-9]$/.test(e.key)) sprintPress(e.key);
       else if (e.key === 'Backspace') sprintPress('del');
       else if (e.key === 'Enter') sprintPress('go');
-      else if (e.key === 'Escape') renderMap();
-    } else if (screen === 'play') {
-      if (/^[0-9]$/.test(e.key) && play.typed.length < 3) setTyped(play.typed + e.key);
-      else if (e.key === 'Backspace') setTyped(play.typed.slice(0, -1));
-      else if (e.key === 'Enter' && play.typed && !frozen) {
-        const hit = bubbles.find(b => String(b.val) === play.typed);
-        tapBubble(hit || null);
-      } else if (e.key === 'Escape') renderMap();
+    } else if (screen === 'game' && keyHandler) {
+      keyHandler(e);
+    } else if (screen === 'intro' && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault(); goStage();
     }
   });
 
@@ -925,10 +1298,11 @@
   $('playBtn').onclick = renderMap;
   $('shopBtn').onclick = renderShop;
   $('factsBtn').onclick = renderFacts;
+  $('introGo').onclick = goStage;
   $('muteBtn').onclick = () => { save.muted = !save.muted; persist(); renderMute(); };
   $('sheetClose').onclick = () => $('sheet').classList.add('hidden');
   $('sheet').onclick = e => { if (e.target.id === 'sheet') $('sheet').classList.add('hidden'); };
-  $('sheetPlay').onclick = () => startLevel(sheetLevel);
+  $('sheetPlay').onclick = () => startRun(sheetLevel);
   $('sheetSprint').onclick = () => startSprint(sheetLevel);
 
   renderMute();
