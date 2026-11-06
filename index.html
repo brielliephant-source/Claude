@@ -306,6 +306,7 @@
   <section id="map" class="screen card hidden">
     <h2 class="sec-title">Choose a level</h2>
     <div class="path" id="path"></div>
+    <div class="btn-row"><button class="link-btn" id="resetBtn">Reset levels</button></div>
   </section>
 
   <!-- Stage intro -->
@@ -1303,6 +1304,26 @@
   $('sheetClose').onclick = () => $('sheet').classList.add('hidden');
   $('sheet').onclick = e => { if (e.target.id === 'sheet') $('sheet').classList.add('hidden'); };
   $('sheetPlay').onclick = () => startRun(sheetLevel);
+  // Two taps to reset: clears level stars and Speed Run bests (coins, characters and facts are kept).
+  let resetTimer = null;
+  $('resetBtn').onclick = () => {
+    const btn = $('resetBtn');
+    if (btn.dataset.armed !== '1') {
+      btn.dataset.armed = '1';
+      btn.textContent = 'Tap again to lock all levels and clear stars';
+      clearTimeout(resetTimer);
+      resetTimer = setTimeout(() => { btn.dataset.armed = ''; btn.textContent = 'Reset levels'; }, 3000);
+      return;
+    }
+    clearTimeout(resetTimer);
+    btn.dataset.armed = '';
+    btn.textContent = 'Reset levels';
+    save.stars = LEVELS.map(() => 0);
+    save.sprintBest = LEVELS.map(() => 0);
+    persist();
+    renderMap();
+    toast('🔄 Levels reset — back to Level 1!');
+  };
   $('sheetSprint').onclick = () => startSprint(sheetLevel);
 
   renderMute();
