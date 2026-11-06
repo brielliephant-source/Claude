@@ -74,6 +74,7 @@
 
   /* Avatar */
   .avatar { position: relative; display: inline-block; line-height: 1; }
+  .avatar .pet { position: absolute; right: -.6em; bottom: -.05em; font-size: .45em; }
   .avatar .hat { position: absolute; left: 50%; top: -.42em; transform: translateX(-50%) rotate(-10deg); font-size: .62em; }
   .avatar.big { font-size: 5.5rem; margin: 18px 0 6px; }
   .avatar.small { font-size: 2.4rem; }
@@ -159,7 +160,7 @@
                 radial-gradient(circle at 40% 40%, rgba(255,255,255,.35) 0 1px, transparent 1.5px) 0 0 / 29px 37px,
                 #05060f;
   }
-  .ship { position: absolute; left: 50%; top: 50%; width: 42px; height: 42px; transform: translate(-50%, -50%); transition: transform .12s; z-index: 3; pointer-events: none; filter: drop-shadow(0 0 4px rgba(255,255,255,.6)); }
+  .ship { position: absolute; left: 50%; top: 50%; width: 42px; height: 42px; transform: translate(-50%, -50%); transition: transform .12s; z-index: 3; pointer-events: none; filter: drop-shadow(0 0 5px var(--ship, #fff)); }
   .ship svg { width: 100%; height: 100%; display: block; }
   .ship.hit { animation: shieldHit .5s; }
   .rock {
@@ -176,7 +177,7 @@
   .rock.reveal { filter: drop-shadow(0 0 8px rgba(34,197,94,.9)); }
   .laser { position: absolute; left: 0; top: 0; width: 6px; height: 6px; border-radius: 50%; background: #fde047; box-shadow: 0 0 8px 3px rgba(253,224,71,.8); z-index: 4; pointer-events: none; }
   @keyframes boom { to { transform: scale(1.8); opacity: 0; } }
-  @keyframes shieldHit { 0%,100% { filter: drop-shadow(0 0 4px rgba(255,255,255,.6)); } 50% { filter: drop-shadow(0 0 14px #ef4444) drop-shadow(0 0 6px #ef4444); } }
+  @keyframes shieldHit { 0%,100% { filter: drop-shadow(0 0 5px var(--ship, #fff)); } 50% { filter: drop-shadow(0 0 14px #ef4444) drop-shadow(0 0 6px #ef4444); } }
 
   /* Mini-game: Mole Whack */
   .moles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 12px; border-radius: 16px; background: var(--grass); touch-action: manipulation; }
@@ -269,6 +270,10 @@
   .item { background: var(--soft); border: 3px solid transparent; border-radius: 14px; padding: 8px 2px; cursor: pointer; color: var(--ink); }
   .item .e { font-size: 2rem; display: block; min-height: 2.4rem; }
   .item .p { font-size: .8rem; font-weight: bold; }
+  .item .e svg { vertical-align: middle; }
+  .swatch { display: inline-block; width: 34px; height: 34px; border-radius: 10px; vertical-align: middle; border: 2px solid rgba(255,255,255,.6); }
+  .shop-note { text-align: left; margin: -4px 0 8px; color: var(--muted); font-size: .85rem; }
+  .shop .avatar.big { margin-top: 40px; }
   .item.equipped { border-color: var(--good); }
   .item.cant { opacity: .5; }
 
@@ -387,10 +392,7 @@
   <section id="shop" class="screen card shop hidden">
     <h2 class="sec-title">Shop</h2>
     <div class="avatar big" id="shopAvatar"></div>
-    <h3>Characters</h3>
-    <div class="shop-grid" id="shopChars"></div>
-    <h3>Hats</h3>
-    <div class="shop-grid" id="shopHats"></div>
+    <div id="shopSections"></div>
   </section>
 
   <!-- Facts -->
@@ -425,7 +427,7 @@
   // Every level is played as these stages, in order. Each stage is a different mini-game.
   const STAGE_ORDER = ['asteroid', 'mole', 'kick', 'rocket'];
   const STAGES = {
-    asteroid: { icon: '☄️', name: 'Asteroid Blaster', desc: 'Asteroids with numbers are drifting through space. Blast the one with the answer before the shot clock runs out!', hint: 'Tap the right asteroid — or type the answer and press Enter.' },
+    asteroid: { icon: '☄️', name: 'Asteroid Blaster', desc: 'Asteroids with numbers are bouncing around space. Blast the one with the answer before the shot clock runs out!', hint: 'Tap the right asteroid — or type the answer and press Enter.' },
     mole:   { icon: '🔨', name: 'Mole Bonk',    desc: 'Moles pop up holding numbers. Bonk the one with the answer — wrong moles cost a heart!', hint: 'Tap the mole with the answer — or type it and press Enter.' },
     kick:   { icon: '⚽', name: 'Penalty Kicks', desc: 'Shoot at the target with the answer before the shot clock runs out. Miss and the goalie saves it!', hint: 'Tap the right target — or type the answer and press Enter.' },
     rocket: { icon: '🚀', name: 'Rocket Race',  desc: 'Every right answer blasts your rocket forward. Beat the alien to the finish line!', hint: 'Type the answer — it goes in by itself.' }
@@ -439,12 +441,34 @@
   const SAVE_KEY = 'ttq-save-v2';
 
   const CHARACTERS = [
-    { e: '🦊', p: 0 }, { e: '🐼', p: 50 }, { e: '🐸', p: 80 }, { e: '🐯', p: 120 },
-    { e: '🐙', p: 150 }, { e: '🦄', p: 200 }, { e: '🤖', p: 250 }, { e: '🐲', p: 400 }
+    { e: '🦊', p: 0 }, { e: '🐼', p: 50 }, { e: '🐸', p: 80 }, { e: '🐰', p: 90 },
+    { e: '🐯', p: 120 }, { e: '🐨', p: 130 }, { e: '🐵', p: 140 }, { e: '🐙', p: 150 },
+    { e: '🐧', p: 160 }, { e: '🦁', p: 180 }, { e: '🦄', p: 200 }, { e: '🦉', p: 220 },
+    { e: '🤖', p: 250 }, { e: '👽', p: 280 }, { e: '🦈', p: 320 }, { e: '🦖', p: 350 },
+    { e: '🐲', p: 400 }, { e: '🦸', p: 500 }
   ];
   const HATS = [
-    { e: '', p: 0 }, { e: '🧢', p: 40 }, { e: '🎀', p: 60 }, { e: '🎩', p: 100 },
-    { e: '🎓', p: 150 }, { e: '⛑️', p: 200 }, { e: '🪖', p: 250 }, { e: '👑', p: 300 }
+    { e: '', p: 0 }, { e: '🧢', p: 40 }, { e: '🎀', p: 60 }, { e: '👒', p: 80 },
+    { e: '🎩', p: 100 }, { e: '🌸', p: 120 }, { e: '🎓', p: 150 }, { e: '⛑️', p: 200 },
+    { e: '🪖', p: 250 }, { e: '⭐', p: 280 }, { e: '👑', p: 300 }, { e: '🔥', p: 450 }
+  ];
+  const PETS = [
+    { e: '', p: 0 }, { e: '🐤', p: 60 }, { e: '🐶', p: 100 }, { e: '🐱', p: 100 },
+    { e: '🐢', p: 120 }, { e: '🐠', p: 140 }, { e: '🦋', p: 160 }, { e: '🐹', p: 180 },
+    { e: '🦜', p: 220 }, { e: '🦕', p: 300 }, { e: '🐉', p: 400 }, { e: '🦄', p: 450 }
+  ];
+  // Ship colors are used for your ship in Asteroid Blaster.
+  const SHIPS = [
+    { id: 'white', c: '#ffffff', p: 0 }, { id: 'cyan', c: '#22d3ee', p: 60 }, { id: 'lime', c: '#a3e635', p: 80 },
+    { id: 'pink', c: '#f472b6', p: 100 }, { id: 'orange', c: '#fb923c', p: 120 }, { id: 'red', c: '#f87171', p: 140 },
+    { id: 'purple', c: '#c084fc', p: 160 }, { id: 'gold', c: '#facc15', p: 250 }
+  ];
+  // Backgrounds change the colors behind the whole game.
+  const BACKGROUNDS = [
+    { id: 'night', a: '#312e81', b: '#1e1b4b', p: 0 }, { id: 'ocean', a: '#0891b2', b: '#0c4a6e', p: 100 },
+    { id: 'forest', a: '#65a30d', b: '#14532d', p: 120 }, { id: 'sunset', a: '#db2777', b: '#7c2d12', p: 150 },
+    { id: 'candy', a: '#c084fc', b: '#831843', p: 180 }, { id: 'lava', a: '#ea580c', b: '#450a0a', p: 220 },
+    { id: 'galaxy', a: '#6d28d9', b: '#020617', p: 260 }, { id: 'gold', a: '#ca8a04', b: '#422006', p: 350 }
   ];
 
   const $ = id => document.getElementById(id);
@@ -459,7 +483,7 @@
   function freshSave() {
     return {
       coins: 0, stars: LEVELS.map(() => 0), sprintBest: LEVELS.map(() => 0), facts: {},
-      avatar: '🦊', hat: '', owned: ['🦊', ''], daily: { date: '', count: 0, claimed: false }, muted: false
+      avatar: '🦊', hat: '', pet: '', ship: 'white', bg: 'night', owned: ['🦊', ''], daily: { date: '', count: 0, claimed: false }, muted: false
     };
   }
   function loadSave() {
@@ -558,7 +582,13 @@
   function renderMute() { $('muteBtn').textContent = save.muted ? '🔇' : '🔊'; }
 
   // ---------- UI helpers ----------
-  function avatarHTML() { return `<span class="face">${save.avatar}</span>${save.hat ? `<span class="hat">${save.hat}</span>` : ''}`; }
+  function avatarHTML() { return `<span class="face">${save.avatar}</span>${save.hat ? `<span class="hat">${save.hat}</span>` : ''}${save.pet ? `<span class="pet">${save.pet}</span>` : ''}`; }
+  function applyBackground() {
+    const bg = BACKGROUNDS.find(x => x.id === save.bg);
+    const root = document.documentElement.style;
+    if (!bg || bg.id === 'night') { root.removeProperty('--bg'); root.removeProperty('--bg2'); return; }
+    root.setProperty('--bg2', bg.a); root.setProperty('--bg', bg.b);
+  }
   function react(el, cls) { el.classList.remove('bounce', 'sad'); void el.offsetWidth; el.classList.add(cls); }
   let toastTimer = null;
   function toast(msg) {
@@ -811,8 +841,9 @@
   // ☄️ Asteroid Blaster: numbered asteroids drift through space (wrapping at the edges).
   // Tap the one with the answer and your ship turns and blasts it before the shot clock runs out.
   MINI.asteroid = facts => {
-    const SHIP_SVG = '<svg viewBox="0 0 40 40" aria-hidden="true"><polygon points="20,3 34,36 20,28 6,36" fill="rgba(255,255,255,.08)" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/></svg>';
-    const space = mk('div', 'space', `<div class="ship">${SHIP_SVG}</div><div class="shotclock"><div></div></div>`);
+    const shipColor = (SHIPS.find(x => x.id === save.ship) || SHIPS[0]).c;
+    const SHIP_SVG = `<svg viewBox="0 0 40 40" aria-hidden="true"><polygon points="20,3 34,36 20,28 6,36" fill="rgba(255,255,255,.08)" stroke="${shipColor}" stroke-width="2.5" stroke-linejoin="round"/></svg>`;
+    const space = mk('div', 'space', `<div class="ship" style="--ship:${shipColor}">${SHIP_SVG}</div><div class="shotclock"><div></div></div>`);
     const typedEl = mk('div', 'typed');
     space.appendChild(typedEl);
     $('stage').appendChild(space);
@@ -836,7 +867,7 @@
       setTyped('');
       rocks.forEach(r => r.el.remove()); bullets.forEach(b => b.el.remove()); bullets = [];
       const W = space.clientWidth, H = space.clientHeight;
-      const speed = 26 + run.streak * 4 + (run.t === 'mix' ? 10 : 0);
+      const speed = Math.min(42, 16 + run.streak * 2.5 + (run.t === 'mix' ? 8 : 0));
       rocks = choicesFor(fact[0], fact[1]).map((v, i) => {
         const el = mk('button', 'rock', `${rockSVG()}<span>${v}</span>`);
         el.setAttribute('aria-label', `Asteroid ${v}`);
@@ -866,8 +897,9 @@
       for (const r of rocks) {
         if (r.dead) continue;
         r.x += r.vx * dt; r.y += r.vy * dt; r.rot += r.vr * dt;
-        if (r.x < -r.r) r.x = W + r.r; else if (r.x > W + r.r) r.x = -r.r;
-        if (r.y < -r.r) r.y = H + r.r; else if (r.y > H + r.r) r.y = -r.r;
+        // bounce off the edges so every asteroid always stays on screen
+        if (r.x < r.r) { r.x = r.r; r.vx = Math.abs(r.vx); } else if (r.x > W - r.r) { r.x = W - r.r; r.vx = -Math.abs(r.vx); }
+        if (r.y < r.r) { r.y = r.r; r.vy = Math.abs(r.vy); } else if (r.y > H - r.r - 14) { r.y = H - r.r - 14; r.vy = -Math.abs(r.vy); }
         r.el.style.transform = `translate(${(r.x - r.r).toFixed(1)}px, ${(r.y - r.r).toFixed(1)}px)`;
         r.svg.style.transform = `rotate(${r.rot.toFixed(1)}deg)`;
       }
@@ -890,6 +922,7 @@
       const deg = Math.atan2(rock.y - H / 2, rock.x - W / 2) * 180 / Math.PI + 90;
       ship.style.transform = `translate(-50%, -50%) rotate(${deg.toFixed(1)}deg)`;
       const el = mk('div', 'laser');
+      el.style.background = shipColor;
       space.appendChild(el);
       bullets.push({ el, x: W / 2, y: H / 2, target: rock, onHit });
       sound('zoom');
@@ -1384,30 +1417,44 @@
   }
 
   // ---------- Shop ----------
-  function renderShop() {
+  const SHOP = [
+    { slot: 'avatar', title: '🦊 Characters', items: CHARACTERS.map(it => ({ ...it, id: it.e, v: it.e })) },
+    { slot: 'hat', title: '🎩 Hats', items: HATS.map(it => ({ ...it, id: it.e, v: it.e })) },
+    { slot: 'pet', title: '🐶 Pets', note: 'Your pet follows you everywhere.', items: PETS.map(it => ({ ...it, id: 'pet:' + it.e, v: it.e })) },
+    { slot: 'ship', title: '🛸 Ship colors', note: 'Used for your ship in Asteroid Blaster.', items: SHIPS.map(it => ({ ...it, id: 'ship:' + it.id, v: it.id,
+        icon: `<svg viewBox="0 0 40 40" width="34" height="34"><polygon points="20,3 34,36 20,28 6,36" fill="#05060f" stroke="${it.c}" stroke-width="3" stroke-linejoin="round"/></svg>` })) },
+    { slot: 'bg', title: '🎨 Backgrounds', note: 'Changes the colors behind the game.', items: BACKGROUNDS.map(it => ({ ...it, id: 'bg:' + it.id, v: it.id,
+        icon: `<i class="swatch" style="background:radial-gradient(circle at 30% 20%, ${it.a}, ${it.b})"></i>` })) }
+  ];
+  function renderShop(stay) {
     $('shopAvatar').innerHTML = avatarHTML();
-    const fill = (wrapId, items, kind) => {
-      const wrap = $(wrapId); wrap.innerHTML = '';
-      items.forEach(it => {
-        const owned = save.owned.includes(it.e);
-        const equipped = (kind === 'avatar' ? save.avatar : save.hat) === it.e;
+    const box = $('shopSections'); box.innerHTML = '';
+    SHOP.forEach(sec => {
+      box.appendChild(mk('h3', '', sec.title));
+      if (sec.note) box.appendChild(mk('p', 'shop-note', sec.note));
+      const grid = mk('div', 'shop-grid');
+      sec.items.forEach(it => {
+        const owned = it.p === 0 || save.owned.includes(it.id);
+        const equipped = save[sec.slot] === it.v;
+        const icon = it.icon || it.e || '🚫';
         const b = mk('button', 'item' + (equipped ? ' equipped' : '') + (!owned && save.coins < it.p ? ' cant' : ''),
-          `<span class="e">${it.e || '🚫'}</span><span class="p">${equipped ? 'Wearing' : owned ? 'Use' : '🪙 ' + it.p}</span>`);
+          `<span class="e">${icon}</span><span class="p">${equipped ? 'Using' : owned ? 'Use' : '🪙 ' + it.p}</span>`);
+        b.setAttribute('aria-label', `${sec.title} ${it.v || 'none'}`);
         b.onclick = () => {
           if (!owned) {
             if (save.coins < it.p) { toast(`You need ${it.p - save.coins} more 🪙 — keep playing!`); return; }
-            addCoins(-it.p); save.owned.push(it.e); sound('coin'); toast('🛍️ Bought!');
+            addCoins(-it.p); save.owned.push(it.id); sound('coin'); toast('🛍️ Bought!');
           }
-          if (kind === 'avatar') save.avatar = it.e; else save.hat = it.e;
-          persist(); renderShop();
+          save[sec.slot] = it.v;
+          if (sec.slot === 'bg') applyBackground();
+          persist(); renderShop(true);
           react($('shopAvatar'), 'bounce');
         };
-        wrap.appendChild(b);
+        grid.appendChild(b);
       });
-    };
-    fill('shopChars', CHARACTERS, 'avatar');
-    fill('shopHats', HATS, 'hat');
-    show('shop');
+      box.appendChild(grid);
+    });
+    if (!stay) show('shop');
   }
 
   // ---------- Fact grid ----------
@@ -1441,7 +1488,7 @@
 
   $('homeBtn').onclick = renderHome;
   $('playBtn').onclick = renderMap;
-  $('shopBtn').onclick = renderShop;
+  $('shopBtn').onclick = () => renderShop();
   $('factsBtn').onclick = renderFacts;
   $('introGo').onclick = goStage;
   $('muteBtn').onclick = () => { save.muted = !save.muted; persist(); renderMute(); };
@@ -1482,6 +1529,7 @@
   $('sheetSprint').onclick = () => startSprint(sheetLevel);
 
   renderMute();
+  applyBackground();
   renderHome();
 })();
 </script>
