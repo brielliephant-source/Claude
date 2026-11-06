@@ -120,8 +120,8 @@
   .sheet-stars { font-size: 2rem; color: var(--accent); letter-spacing: 4px; }
   .stage-strip { font-size: 1.6rem; letter-spacing: 2px; }
   .practice-label { font-size: .85rem; color: var(--muted); font-weight: bold; margin-top: 4px; }
-  .practice-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .practice-row .btn { padding: 8px 2px; font-size: .75rem; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .practice-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .practice-row .btn { padding: 8px 2px; font-size: .7rem; display: flex; flex-direction: column; align-items: center; gap: 2px; }
   .practice-row .btn span { font-size: 1.5rem; }
 
   /* Stage intro */
@@ -131,8 +131,8 @@
   .intro h2 { margin: 4px 0; font-size: 1.8rem; }
   .intro .stage-num { color: var(--muted); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; font-size: .85rem; }
   .intro p { color: var(--muted); margin: 8px 0 16px; }
-  .dots { display: flex; justify-content: center; gap: 8px; margin: 12px 0 18px; }
-  .dot { width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; background: var(--soft); border: 3px solid var(--line); }
+  .dots { display: flex; justify-content: center; gap: 6px; margin: 12px 0 18px; }
+  .dot { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; background: var(--soft); border: 3px solid var(--line); }
   .dot.done { background: var(--good); border-color: var(--good); }
   .dot.now { border-color: var(--accent); transform: scale(1.15); }
   .intro-hearts { font-size: 1.2rem; margin-bottom: 12px; }
@@ -200,6 +200,38 @@
   .hole.oops .sign { background: var(--bad); color: #fff; border-color: #991b1b; }
   .hole.oops .mole { animation: shake .3s; }
   .hammer { position: absolute; font-size: 2.2rem; pointer-events: none; z-index: 8; animation: hammer .25s forwards; }
+
+  /* Boss Battle */
+  .boss-arena { position: relative; height: clamp(230px, 36vh, 290px); border-radius: 16px; overflow: hidden; background: radial-gradient(circle at 75% 45%, #a855f7, #3b0764 55%, #1e1b4b); }
+  .boss-arena.quake { animation: shake .35s; }
+  .boss-arena .typed { top: 56px; }
+  .boss-top { position: absolute; left: 12px; right: 12px; top: 10px; color: #fff; font-weight: bold; font-size: .9rem; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px; }
+  .boss-hp { flex-basis: 100%; height: 12px; background: rgba(0,0,0,.4); border-radius: 99px; overflow: hidden; border: 2px solid rgba(255,255,255,.55); }
+  .boss-hp > div { height: 100%; width: 100%; background: linear-gradient(90deg, #ef4444, #f97316); transition: width .3s; }
+  .boss { position: absolute; right: 10%; top: 26%; font-size: clamp(4rem, 19vw, 5.6rem); line-height: 1; animation: hover 1.6s ease-in-out infinite; z-index: 2; filter: drop-shadow(0 0 10px rgba(255,255,255,.75)); }
+  .boss.angry { filter: drop-shadow(0 0 14px #ef4444) drop-shadow(0 0 6px #fff) saturate(1.5); }
+  .boss.hit { animation: bossHit .4s; }
+  .boss.lunge { animation: lunge .45s; }
+  .boss.defeated { animation: defeated 1.1s forwards; }
+  .charge { position: absolute; right: 12px; bottom: 14px; width: 46%; height: 10px; background: rgba(0,0,0,.4); border-radius: 99px; }
+  .charge > div { height: 100%; width: 0; background: linear-gradient(90deg, #fde047, #ef4444); border-radius: 99px; }
+  .charge span { position: absolute; right: 0; top: -18px; font-size: .75rem; color: #fde68a; font-weight: bold; white-space: nowrap; }
+  .hero-spot { position: absolute; left: 9%; bottom: 10px; font-size: 2rem; z-index: 2; }
+  .hero-spot.bounce { animation: bounce .5s; }
+  .hero-spot.sad { animation: shake .4s; }
+  .proj { position: absolute; font-size: 2rem; transform: translate(-50%, -50%); transition: left .35s ease-in, top .35s ease-in; z-index: 5; pointer-events: none; }
+  .proj.big { font-size: 3rem; }
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .choice { font-size: 1.8rem; font-weight: bold; padding: 12px 0; border: none; border-radius: 14px; background: var(--pad); color: var(--pad-ink); box-shadow: 0 4px 0 var(--pad-edge); cursor: pointer; }
+  .choice:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--pad-edge); }
+  .choice:disabled { cursor: default; }
+  .choice.right { background: var(--good); color: #fff; box-shadow: 0 4px 0 #15803d; }
+  .choice.wrong { background: var(--bad); color: #fff; box-shadow: 0 4px 0 #991b1b; }
+  .choice.reveal { outline: 4px solid var(--good); outline-offset: 2px; }
+  @keyframes hover { 50% { transform: translateY(-8px); } }
+  @keyframes bossHit { 0%, 100% { transform: none; filter: none; } 30% { transform: translateX(12px) rotate(10deg); filter: brightness(2.4); } 60% { transform: translateX(-8px); } }
+  @keyframes lunge { 50% { transform: translateX(-50px) scale(1.2); } }
+  @keyframes defeated { to { transform: rotate(540deg) scale(0); opacity: 0; } }
 
   /* Mini-game: Penalty Kicks */
   .pitch {
@@ -428,13 +460,30 @@
   // Level order: 5s first, then 10s, then the rest of the 1–12 tables, ending with a mixed boss level.
   const LEVELS = [5, 10, 2, 11, 3, 4, 9, 6, 7, 8, 12, 1, 'mix'];
   // Every level is played as these stages, in order. Each stage is a different mini-game.
-  const STAGE_ORDER = ['asteroid', 'mole', 'kick', 'rocket'];
+  const STAGE_ORDER = ['asteroid', 'mole', 'kick', 'rocket', 'boss'];
   const STAGES = {
     asteroid: { icon: '☄️', name: 'Asteroid Blaster', desc: 'Asteroids with numbers are bouncing around space. Blast the one with the answer before the shot clock runs out!', hint: 'Tap the right asteroid — or type the answer and press Enter.' },
     mole:   { icon: '🔨', name: 'Mole Bonk',    desc: 'Moles pop up holding numbers. Bonk the one with the answer — wrong moles cost a heart!', hint: 'Tap the mole with the answer — or type it and press Enter.' },
     kick:   { icon: '⚽', name: 'Penalty Kicks', desc: 'Shoot at the target with the answer before the shot clock runs out. Miss and the goalie saves it!', hint: 'Tap the right target — or type the answer and press Enter.' },
-    rocket: { icon: '🚀', name: 'Rocket Race',  desc: 'Every right answer blasts your rocket forward. Beat the alien to the finish line!', hint: 'Type the answer — it goes in by itself.' }
+    rocket: { icon: '🚀', name: 'Rocket Race',  desc: 'Every right answer blasts your rocket forward. Beat the alien to the finish line!', hint: 'Type the answer — it goes in by itself.' },
+    boss:   { icon: '👾', name: 'Boss Battle', desc: '', hint: 'Tap the answer to attack — or type it and press Enter.' }
   };
+  // A different boss guards the end of every level.
+  const BOSSES = [
+    { e: '👾', name: 'Glitch Gobbler' }, { e: '🦀', name: 'Captain Pinch' }, { e: '🐊', name: 'Croc Chomper' },
+    { e: '🦇', name: 'Count Flapula' }, { e: '👻', name: 'Boo-tron' }, { e: '🕷️', name: 'Webster' },
+    { e: '🧟', name: 'Zombo' }, { e: '🦂', name: 'Stingzilla' }, { e: '👹', name: 'Ogre King' },
+    { e: '🦑', name: 'Inky Kraken' }, { e: '🤖', name: 'Mega Byte' }, { e: '☃️', name: 'Frosty Fist' },
+    { e: '🐉', name: 'Dragon Emperor' }
+  ];
+  const bossFor = level => BOSSES[Math.min(level, BOSSES.length - 1)];
+  const bossHP = level => LEVELS[level] === 'mix' ? 16 : 8 + Math.floor(level / 2);
+  function stageInfo(s, level) {
+    if (s !== 'boss') return STAGES[s];
+    const b = bossFor(level);
+    return { ...STAGES.boss, icon: b.e, name: b.name,
+      desc: `Boss battle! ${b.name} has ${bossHP(level)} HP. Answer to blast it — fast answers do double damage. Answer before its attack charges, or you lose a heart!` };
+  }
   const HEARTS = 5;
   const BOSS_FACTS = 15;
   const RACE_GOAL = 8;
@@ -744,11 +793,11 @@
     const earned = save.stars[i] > 0;
     $('sheetTitle').textContent = `Level ${i + 1} · ${tableName(t)}`;
     $('sheetStars').textContent = starStr(save.stars[i]);
-    $('sheetStrip').textContent = STAGE_ORDER.map(s => STAGES[s].icon).join(' ➜ ') + ' ➜ 🏆';
+    $('sheetStrip').textContent = STAGE_ORDER.map(s => stageInfo(s, i).icon).join(' ➜ ') + ' ➜ 🏆';
     $('sheetDesc').textContent = `${STAGE_ORDER.length} stages, ${HEARTS} hearts. Clear every stage to win the level!`;
     const row = $('sheetPractice'); row.innerHTML = '';
     STAGE_ORDER.forEach(s => {
-      const b = mk('button', 'btn secondary', `<span>${STAGES[s].icon}</span>${STAGES[s].name}`);
+      const b = mk('button', 'btn secondary', `<span>${stageInfo(s, i).icon}</span>${STAGES[s].name}`);
       b.disabled = !earned;
       b.onclick = () => startRun(i, s);
       row.appendChild(b);
@@ -793,10 +842,10 @@
   }
 
   function showIntro() {
-    const s = run.stages[run.si], info = STAGES[s];
-    $('introCleared').textContent = run.si > 0 ? `✅ ${STAGES[run.stages[run.si - 1]].name} cleared!` : run.practice ? 'Practice mode' : `Level ${run.level + 1} · ${tableName(run.t)}`;
+    const s = run.stages[run.si], info = stageInfo(s, run.level);
+    $('introCleared').textContent = run.si > 0 ? `✅ ${stageInfo(run.stages[run.si - 1], run.level).name} cleared!` : run.practice ? 'Practice mode' : `Level ${run.level + 1} · ${tableName(run.t)}`;
     const dots = $('introDots'); dots.innerHTML = '';
-    run.stages.forEach((st, k) => dots.appendChild(mk('div', 'dot' + (k < run.si ? ' done' : k === run.si ? ' now' : ''), k < run.si ? '✓' : STAGES[st].icon)));
+    run.stages.forEach((st, k) => dots.appendChild(mk('div', 'dot' + (k < run.si ? ' done' : k === run.si ? ' now' : ''), k < run.si ? '✓' : stageInfo(st, run.level).icon)));
     if (!run.practice) dots.appendChild(mk('div', 'dot', '🏆'));
     $('introNum').textContent = run.practice ? 'Mini-game' : `Stage ${run.si + 1} of ${run.stages.length}`;
     $('introIcon').textContent = info.icon;
@@ -809,7 +858,7 @@
 
   function goStage() {
     if (screen !== 'intro') return;
-    const s = run.stages[run.si], info = STAGES[s];
+    const s = run.stages[run.si], info = stageInfo(s, run.level);
     show('game');
     $('stageLabel').textContent = `${run.practice ? '' : (run.si + 1) + '/' + run.stages.length + ' '}${info.icon}`;
     $('playAvatar').innerHTML = avatarHTML();
@@ -1107,6 +1156,130 @@
     later(next, 300);
   };
 
+  // 👾 Boss Battle: answer to blast the level's boss. Fast answers do double damage.
+  // Answer before the boss's attack charges up, or it hits you and you lose a heart.
+  MINI.boss = () => {
+    const boss = bossFor(run.level), maxHp = bossHP(run.level);
+    const arena = mk('div', 'boss-arena',
+      `<div class="boss-top"><span>${boss.e} ${boss.name}</span><span class="boss-hp-num"></span><div class="boss-hp"><div></div></div></div>
+       <div class="boss">${boss.e}</div>
+       <div class="charge"><span>⚡ Boss attack</span><div></div></div>
+       <div class="avatar hero-spot">${avatarHTML()}</div>`);
+    const choices = mk('div', 'choices'), typedEl = mk('div', 'typed');
+    arena.appendChild(typedEl);
+    $('stage').append(arena, choices);
+    const bossEl = arena.querySelector('.boss'), hpEl = arena.querySelector('.boss-hp > div'), hpNum = arena.querySelector('.boss-hp-num');
+    const chargeEl = arena.querySelector('.charge > div'), heroEl = arena.querySelector('.hero-spot');
+    const baseLimit = run.t === 'mix' ? 5500 : Math.max(5500, 9000 - run.level * 300);
+    let hp = maxHp, fact = null, answer = 0, frozen = true, qStart = 0, limit = baseLimit, typed = '', angry = false;
+    const setTyped = v => { typed = v; typedEl.textContent = v; };
+    const flash = (el, cls, ms) => { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); setTimeout(() => el.classList.remove(cls), ms); };
+
+    function renderHp() {
+      hpEl.style.width = (hp / maxHp * 100) + '%';
+      hpNum.textContent = `${hp} / ${maxHp} HP`;
+      setProgress((maxHp - hp) / maxHp);
+    }
+    function next() {
+      let a, b;
+      do {
+        if (run.t === 'mix') { a = 2 + rand(11); b = 2 + rand(11); }
+        else [a, b] = orient(run.t, 1 + rand(12));
+      } while (fact && fact[0] * fact[1] === a * b);
+      fact = [a, b]; answer = a * b;
+      setQuestion(`${a} × ${b}`);
+      setTyped('');
+      choices.innerHTML = '';
+      choicesFor(a, b, 4).forEach(v => {
+        const btn = mk('button', 'choice'); btn.textContent = v;
+        btn.addEventListener('pointerdown', e => { e.preventDefault(); pick(v, btn); });
+        choices.appendChild(btn);
+      });
+      limit = baseLimit * (angry ? .8 : 1);
+      chargeEl.style.width = '0%';
+      qStart = performance.now();
+      frozen = false;
+    }
+    function tick() {
+      if (frozen) return;
+      const f = (performance.now() - qStart) / limit;
+      chargeEl.style.width = Math.min(100, f * 100) + '%';
+      if (f >= 1) attack(true);
+    }
+    function projectile(from, to, text, cls, done) {
+      const ar = arena.getBoundingClientRect(), f = from.getBoundingClientRect(), t = to.getBoundingClientRect();
+      const p = mk('div', 'proj ' + cls); p.textContent = text;
+      p.style.left = (f.left - ar.left + f.width / 2) + 'px'; p.style.top = (f.top - ar.top + f.height / 2) + 'px';
+      arena.appendChild(p);
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        p.style.left = (t.left - ar.left + t.width / 2) + 'px'; p.style.top = (t.top - ar.top + t.height / 2) + 'px';
+      }));
+      setTimeout(() => p.remove(), 400);
+      later(done, 380);
+    }
+    function revealRight() { [...choices.children].forEach(c => { c.disabled = true; if (Number(c.textContent) === answer) c.classList.add('reveal'); }); }
+    function pick(v, btn) {
+      if (frozen) return;
+      frozen = true;
+      const ms = performance.now() - qStart;
+      [...choices.children].forEach(c => { c.disabled = true; });
+      if (v !== answer) { btn.classList.add('wrong'); return attack(false); }
+      btn.classList.add('right');
+      const crit = ms < MASTER_MS;
+      gotIt(fact[0], fact[1], ms, heroEl);
+      setQuestion(`${fact[0]} × ${fact[1]} = ${answer}`, 'good');
+      flash(heroEl, 'bounce', 500);
+      sound('zoom');
+      projectile(heroEl, bossEl, crit ? '☄️' : '🔥', crit ? 'big' : '', () => {
+        const dmg = crit ? 2 : 1;
+        hp = Math.max(0, hp - dmg);
+        renderHp();
+        flash(bossEl, 'hit', 400);
+        const [x, y] = stagePoint(bossEl);
+        floater(x, y - 20, crit ? `CRITICAL −${dmg}!` : `−${dmg}`);
+        sound('bonk');
+        if (hp <= 0) return defeat();
+        if (!angry && hp <= maxHp / 2) { angry = true; bossEl.classList.add('angry'); banner(`😡 ${boss.name} is angry!`); }
+        later(next, 650);
+      });
+    }
+    function attack(timeout) {
+      frozen = true;
+      revealRight();
+      setQuestion(timeout ? `Too slow! ${fact[0]} × ${fact[1]} = ${answer}` : `${fact[0]} × ${fact[1]} = ${answer}`, timeout ? 'bad small' : 'bad');
+      flash(bossEl, 'lunge', 450);
+      projectile(bossEl, heroEl, '💥', 'big', () => {
+        flash(arena, 'quake', 400);
+        flash(heroEl, 'sad', 400);
+        const dead = missedIt(fact[0], fact[1], true);
+        later(dead ? finishRun : next, 1400);
+      });
+    }
+    function defeat() {
+      frozen = true;
+      bossEl.classList.add('defeated');
+      setQuestion(`${boss.name} defeated!`, 'good small');
+      banner(`🏆 Boss defeated! +50 🪙`);
+      addCoins(50); run.coins += 50;
+      sound('win');
+      later(stageDone, 1900);
+    }
+    keyHandler = e => {
+      if (/^[0-9]$/.test(e.key) && typed.length < 3) setTyped(typed + e.key);
+      else if (e.key === 'Backspace') setTyped(typed.slice(0, -1));
+      else if (e.key === 'Enter' && typed && !frozen) {
+        const btn = [...choices.children].find(c => c.textContent === typed);
+        setTyped('');
+        if (btn) pick(Number(btn.textContent), btn);
+      }
+    };
+    const timer = setInterval(tick, 50);
+    cleanup = () => clearInterval(timer);
+    renderHp();
+    setQuestion(`${boss.name} appears!`, 'small');
+    later(next, 1000);
+  };
+
   // ⚽ Penalty Kicks: three targets in the goal; shoot at the one with the answer before the shot clock runs out.
   MINI.kick = facts => {
     const pitch = mk('div', 'pitch', '<div class="goal"></div><div class="keeper">🐻</div><div class="ball">⚽</div><div class="shotclock"><div></div></div>');
@@ -1323,7 +1496,7 @@
     if (r.practice) {
       const s = r.stages[0];
       showResult({
-        title: cleared ? `${STAGES[s].icon} ${STAGES[s].name} cleared!` : 'Out of hearts! 💔', stars: '', stats, missed: r.missed,
+        title: cleared ? `${stageInfo(s, i).icon} ${stageInfo(s, i).name} cleared!` : 'Out of hearts! 💔', stars: '', stats, missed: r.missed,
         btns: [['🗺️ Map', 'secondary', renderMap], ['↻ Again', 'green', () => startRun(i, s)], ['▶ Full level', 'primary', () => startRun(i)]],
         happy: cleared
       });
