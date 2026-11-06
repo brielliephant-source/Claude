@@ -214,6 +214,13 @@
     background: #facc15; border: 3px solid #a16207; box-shadow: 0 3px 0 #a16207; color: #a16207; font-weight: 900; font-size: 1.4rem;
     display: flex; align-items: center; justify-content: center; }
   .qblock.got { animation: boom .4s forwards; }
+  .enemy { position: absolute; left: 0; bottom: 54px; font-size: 2.3rem; line-height: 1; z-index: 2; }
+  .enemy span { display: inline-block; transform-origin: bottom center; animation: waddle .35s ease-in-out infinite alternate; }
+  .enemy.stomped span { animation: stompFlat .3s forwards; }
+  .dash-hero.hurt { animation: hurt .9s; }
+  @keyframes waddle { from { transform: rotate(-8deg); } to { transform: rotate(8deg) translateY(-4px); } }
+  @keyframes stompFlat { to { transform: scale(1.3, .2); opacity: .5; } }
+  @keyframes hurt { 0% { transform: none; } 20% { transform: translateX(-34px) rotate(-25deg); } 40%, 80% { opacity: .3; } 60% { opacity: 1; } 100% { transform: none; opacity: 1; } }
   .boss-power { position: absolute; left: 12px; top: 54px; z-index: 3; font-size: 1.05rem; font-weight: bold; color: #fff; background: rgba(0,0,0,.35); border-radius: 10px; padding: 2px 8px; }
 
   /* Boss Battle */
@@ -506,7 +513,7 @@
     mole:   { icon: '🔨', name: 'Mole Bonk',    desc: 'Moles pop up holding numbers. Bonk the one with the answer — wrong moles cost a heart!', hint: 'Tap the mole with the answer — or type it and press Enter.' },
     kick:   { icon: '⚽', name: 'Penalty Kicks', desc: 'Shoot at the target with the answer before the shot clock runs out. Miss and the goalie saves it!', hint: 'Tap the right target — or type the answer and press Enter.' },
     rocket: { icon: '🚀', name: 'Rocket Race',  desc: 'Every right answer blasts your rocket forward. Beat the alien to the finish line!', hint: 'Type the answer — it goes in by itself.' },
-    dash:   { icon: '🏃', name: 'Hero Dash', desc: 'Your hero is dashing toward pits! Answer to jump over each one. Answer in under 3 seconds to super-jump and grab ❓ power-ups for the boss battle!', hint: 'Tap the answer to jump — or type it and press Enter.' },
+    dash:   { icon: '🏃', name: 'Hero Dash', desc: 'Your hero is dashing toward pits and enemies! Answer to jump over pits and stomp on enemies\' heads. Answer in under 3 seconds to super-jump and grab ❓ power-ups for the boss battle!', hint: 'Tap the answer to jump — or type it and press Enter. Stomp enemies for +5 🪙!' },
     boss:   { icon: '👾', name: 'Boss Battle', desc: '', hint: 'Tap the answer to attack — or type it and press Enter.' }
   };
   // A different boss guards the end of every level.
@@ -1250,10 +1257,14 @@
     $('stage').append(world, choices);
     const ground = world.querySelector('.dash-ground'), hero = world.querySelector('.dash-hero');
     const GROUND = 56, PIT_W = 76, FAST = 340, JUMP_TIME = .55;
-    const queue = facts.map(f => ({ f, box: false }));
+    const ENEMIES = ['🐌', '🦀', '🐢', '🐛', '🦔', '🐍', '🦂', '🐞', '👾'];
+    // About half the obstacles are enemies to stomp on; the rest are pits to jump over.
+    const kinds = shuffle(facts.map((_, k) => (k % 2 ? 'enemy' : 'pit')));
+    const queue = facts.map((f, k) => ({ f, box: false, kind: kinds[k] }));
     shuffle(range(0, queue.length - 1)).slice(0, 3).forEach(k => { queue[k].box = true; });
     const total = queue.length;
     let done = 0, item = null, fact = null, answer = 0, pit = null, box = null, pitX = 0, v = 0, groundX = 0;
+    let stomped = false;
     let state = 'idle', qStart = 0, limit = 6000, jumpT = 0, superJump = false, gotBox = false, typed = '', raf = 0, lastT = 0, dead = false;
     const setTyped = v2 => { typed = v2; typedEl.textContent = v2; };
     const heroX = () => world.clientWidth * .16;
@@ -1264,7 +1275,7 @@
       item = queue[0]; fact = item.f; answer = fact[0] * fact[1];
       setQuestion(`${fact[0]} × ${fact[1]}`);
       setTyped('');
-      hero.classList.remove('fall'); hero.style.transform = '';
+      hero.classList.remove('fall', 'hurt'); hero.style.transform = '';
       choices.innerHTML = '';
       choicesFor(fact[0], fact[1], 3).forEach(val => {
         const btn = mk('button', 'choice'); btn.textContent = val;
@@ -1272,7 +1283,13 @@
         choices.appendChild(btn);
       });
       const W = world.clientWidth;
-      pit = mk('div', 'pit'); pit.style.width = PIT_W + 'px'; world.appendChild(pit);
+      if (item.kind === 'enemy') {
+        pit = mk('div', 'enemy', `<span>${pick(ENEMIES)}</span>`);
+      } else {
+        pit = mk('div', 'pit'); pit.style.width = PIT_W + 'px';
+      }
+      world.appendChild(pit);
+      stomped = false;
       box = null; gotBox = false;
       if (item.box) { box = mk('div', 'qblock', '?'); world.appendChild(box); }
       pitX = W + 10;
@@ -1284,7 +1301,8 @@
     }
     function place() {
       if (pit) pit.style.transform = `translateX(${pitX.toFixed(1)}px)`;
-      if (box && !gotBox) box.style.transform = `translate(${(pitX + PIT_W / 2 - 20).toFixed(1)}px, 0)`;
+      const obsW = pit ? pit.offsetWidth : PIT_W;
+      if (box && !gotBox) box.style.transform = `translate(${(pitX + obsW / 2 - 20).toFixed(1)}px, 0)`;
       hero.style.left = heroX() + 'px';
     }
     function loop(t) {
@@ -1295,14 +1313,23 @@
       ground.style.backgroundPosition = `${-groundX.toFixed(1)}px 0, ${-groundX.toFixed(1)}px 0`;
       place();
       if (state === 'approach' && pitX <= heroFront()) timeout();
-      else if (state === 'dashJump' && pitX - heroFront() <= 14) { state = 'jumping'; jumpT = 0; sound('flip'); }
+      else if (state === 'dashJump' && pitX - heroFront() <= (item.kind === 'enemy' ? 36 : 14)) {
+        state = 'jumping'; jumpT = 0; sound('flip');
+        if (item.kind === 'enemy') {
+          // slow the world so the enemy is right under the hero as they come down on its head
+          const gap = (pitX + pit.offsetWidth / 2) - (heroX() + hero.offsetWidth / 2);
+          v = Math.max(40, gap / (.8 * JUMP_TIME));
+        }
+      }
       else if (state === 'jumping') {
         jumpT += dt;
         const p = Math.min(1, jumpT / JUMP_TIME), peak = superJump ? 118 : 70;
         hero.style.transform = `translateY(${(-4 * peak * p * (1 - p)).toFixed(1)}px)`;
         if (superJump && box && !gotBox && p >= .45) collect();
+        if (item.kind === 'enemy' && !stomped && p >= .8) stomp();
         if (p >= 1) land();
-      } else if (state === 'fallDash' && pitX <= heroX() - 6) fall();
+      } else if (state === 'fallDash' && item.kind === 'enemy' && pitX <= heroFront()) bump();
+      else if (state === 'fallDash' && pitX <= heroX() - 6) fall();
     }
     function choose(val, btn) {
       if (state !== 'approach') return;
@@ -1329,7 +1356,26 @@
       setQuestion(`Too slow! ${fact[0]} × ${fact[1]} = ${answer}`, 'bad small');
       missedIt(fact[0], fact[1], false);
       requeue();
-      fall();
+      if (item.kind === 'enemy') bump(); else fall();
+    }
+    function stomp() {
+      stomped = true;
+      pit.classList.add('stomped');
+      const [x, y] = stagePoint(pit);
+      floater(x, y - 20, 'STOMP! +5 🪙');
+      addCoins(5); run.coins += 5;
+      sound('bonk');
+    }
+    function bump() {  // the enemy runs into your hero
+      state = 'falling'; v = 0;
+      hero.classList.add('hurt');
+      sound('wrong');
+      later(() => {
+        pit.remove(); if (box) box.remove();
+        if (dead) return finishRun();
+        hero.classList.remove('hurt');
+        later(spawn, 250);
+      }, 1000);
     }
     function fall() {
       state = 'falling'; v = 0;
