@@ -343,6 +343,15 @@
     background-size: 100% 100%, 300% 100%; animation: rainbowShift 3s linear infinite;
   }
   .r-mythic .rar { background: linear-gradient(90deg, #f43f5e, #f59e0b, #22c55e, #3b82f6, #a855f7); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .item.r-secret { border-color: #000; color: #e2e8f0; background: linear-gradient(115deg, #020617 30%, #4c1d95 45%, #020617 60%) 0 0 / 300% 100%; animation: secretShine 3.5s linear infinite; box-shadow: inset 0 0 0 1px #a855f7; }
+  .item.r-secret.equipped { box-shadow: inset 0 0 0 1px #a855f7, 0 0 0 3px var(--good); }
+  .r-secret .rar { color: #f0abfc; text-shadow: 0 0 6px #a855f7; }
+  .rarity-key .r-secret .rar { background: #0f172a; border-radius: 6px; padding: 1px 6px; }
+  .mystery { display: inline-flex; width: 36px; height: 36px; align-items: center; justify-content: center; border-radius: 50%; background: #1e1b4b; color: #f0abfc; font-weight: 900; font-size: 1.4rem; box-shadow: 0 0 10px #a855f7; }
+  .title-chip { display: inline-block; font-size: .66rem; font-weight: bold; line-height: 1.15; padding: 6px 4px; border-radius: 8px; background: rgba(99,102,241,.15); min-height: 2.4rem; display: inline-flex; align-items: center; }
+  .secret-note { text-align: center; margin: 2px 0 6px; }
+  .avatar .aura.secret-aura { background: conic-gradient(rgba(168,85,247,.7), rgba(15,23,42,.6), rgba(217,70,239,.7), rgba(15,23,42,.6), rgba(168,85,247,.7)); }
+  @keyframes secretShine { to { background-position: -300% 0; } }
   .rarity-key { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 12px; margin: 4px 0 6px; }
   .rarity-key .rar { font-size: .72rem; }
   .avatar .aura { position: absolute; left: 50%; top: 55%; width: 1.9em; height: 1.9em; border-radius: 50%; z-index: 0; pointer-events: none;
@@ -351,8 +360,8 @@
   .rainbow { animation: hueSpin 1.6s linear infinite; }
   .ship.rainbow { animation: shipHue 1.6s linear infinite; }
   @keyframes shipHue { from { filter: drop-shadow(0 0 5px var(--ship)) hue-rotate(0deg); } to { filter: drop-shadow(0 0 5px var(--ship)) hue-rotate(360deg); } }
-  .aurora-swatch, body.bg-aurora { background: linear-gradient(120deg, #0f766e, #4c1d95, #be185d, #1d4ed8, #0f766e) !important; background-size: 400% 400% !important; animation: auroraMove 14s ease infinite; }
-  body.bg-aurora { background-attachment: fixed !important; }
+  body.bg-anim { background: var(--anim) !important; background-size: 400% 400% !important; background-attachment: fixed !important; animation: auroraMove 14s ease infinite; }
+  .anim-swatch { background-size: 400% 400% !important; animation: auroraMove 5s ease infinite; }
   @keyframes rainbowShift { to { background-position: 0 0, 300% 0; } }
   @keyframes auraSpin { from { transform: translate(-50%, -50%) rotate(0); } to { transform: translate(-50%, -50%) rotate(360deg); } }
   @keyframes hueSpin { to { filter: hue-rotate(360deg); } }
@@ -398,7 +407,7 @@
   <!-- Home -->
   <section id="home" class="screen card home">
     <div class="avatar big" id="homeAvatar"></div>
-    <h2>Ready, Math Hero?</h2>
+    <h2 id="homeTitle">Ready, Math Hero?</h2>
     <div class="daily">
       <div class="daily-label"><span>🎯 Today's goal</span><b id="dailyText">0 / 40 facts</b></div>
       <div class="bar"><div id="dailyBar"></div></div>
@@ -557,7 +566,11 @@
     { e: '🐲', p: 400 }, { e: '😎', p: 450 },
     { e: '🐭', p: 60 }, { e: '🐔', p: 95 }, { e: '😺', p: 110 }, { e: '🐗', p: 170 },
     { e: '🤡', p: 240 }, { e: '🎃', p: 340 }, { e: '💀', p: 420 }, { e: '😈', p: 550 },
-    { e: '🌝', p: 750 }, { e: '🌞', p: 1000 }, { e: '🤩', p: 1500 }
+    { e: '🌝', p: 750 }, { e: '🌞', p: 1000 }, { e: '🤩', p: 1500 },
+    { e: '🦝', p: 130 }, { e: '🙀', p: 140 }, { e: '🤓', p: 190 }, { e: '🐻‍❄️', p: 230 },
+    { e: '🥶', p: 270 }, { e: '👻', p: 360 }, { e: '👺', p: 480 }, { e: '😇', p: 600 }, { e: '🤯', p: 850 },
+    { e: '🌚', p: Infinity, secret: true, hint: 'Master 40 facts', goal: 40, cur: () => masteredCount() },
+    { e: '👹', p: Infinity, secret: true, hint: 'Defeat the Ogre King (Level 9 boss)', goal: 1, cur: () => (stats().bosses.includes(8) ? 1 : 0) }
   ].sort((a, b) => a.p - b.p);
   // Outfits: clothes drawn on the hero's body.
   const OUTFITS = [
@@ -575,7 +588,13 @@
     { id: 'knight',  p: 380, shirt: '#94a3b8', pants: '#64748b', shoes: '#475569', belt: '#475569', star: '#dc2626', cape: '#1d4ed8' },
     { id: 'golden',  p: 700, shirt: '#fbbf24', pants: '#d97706', shoes: '#b45309', cape: '#fde68a', star: '#fff7ed', belt: '#b45309' },
     { id: 'galaxy',  p: 1000, shirt: '#312e81', pants: '#1e1b4b', shoes: '#0f172a', cape: '#7c3aed', sparkle: true },
-    { id: 'rainbow', p: 1600, shirt: '#ef4444', pants: '#3b82f6', shoes: '#a855f7', rainbow: true, cape: '#22c55e', star: '#fff' }
+    { id: 'rainbow', p: 1600, shirt: '#ef4444', pants: '#3b82f6', shoes: '#a855f7', rainbow: true, cape: '#22c55e', star: '#fff' },
+    { id: 'doctor',  p: 140, shirt: '#f8fafc', pants: '#0ea5e9', shoes: '#f8fafc', emblem: '✚', emblemColor: '#dc2626' },
+    { id: 'firefighter', p: 230, shirt: '#b91c1c', pants: '#7f1d1d', shoes: '#111827', stripes: '#facc15' },
+    { id: 'tux',     p: 290, shirt: '#111827', pants: '#111827', shoes: '#000000', panel: '#f8fafc', bow: '#dc2626' },
+    { id: 'lava',    p: 520, shirt: '#ea580c', pants: '#7c2d12', shoes: '#450a0a', stripes: '#450a0a', cape: '#dc2626' },
+    { id: 'frost',   p: 850, shirt: '#bae6fd', pants: '#38bdf8', shoes: '#0c4a6e', cape: '#f0f9ff', star: '#0ea5e9', sparkle: true },
+    { id: 'shadow', shirt: '#0f172a', pants: '#020617', shoes: '#000000', cape: '#581c87', star: '#c084fc', sparkle: true, p: Infinity, secret: true, hint: 'Get a 25-answer streak', goal: 25, cur: () => stats().bestStreak }
   ].sort((a, b) => a.p - b.p);
   function bodySVG(o) {
     const hand = '#fcd9b6';
@@ -588,14 +607,15 @@
     s += o.robe ? `<path d="M30 4 H70 L80 82 H20 Z" fill="${o.shirt}"/>` : `<rect x="26" y="4" width="48" height="58" rx="14" fill="${o.shirt}"/>`;
     if (o.stripes) s += `<rect x="26" y="22" width="48" height="7" fill="${o.stripes}"/><rect x="26" y="38" width="48" height="7" fill="${o.stripes}"/>`;
     if (o.pocket) s += `<rect x="36" y="38" width="28" height="12" rx="5" fill="${o.pocket}"/>`;
-    if (o.panel) s += `<rect x="38" y="20" width="24" height="16" rx="3" fill="${o.panel}"/><circle cx="44" cy="28" r="2.5" fill="#fde047"/><circle cx="53" cy="28" r="2.5" fill="#f87171"/>`;
+    if (o.panel && o.bow) s += `<path d="M40 4 H60 L54 50 H46 Z" fill="${o.panel}"/><polygon points="42,8 50,12 42,16" fill="${o.bow}"/><polygon points="58,8 50,12 58,16" fill="${o.bow}"/>`;
+    else if (o.panel) s += `<rect x="38" y="20" width="24" height="16" rx="3" fill="${o.panel}"/><circle cx="44" cy="28" r="2.5" fill="#fde047"/><circle cx="53" cy="28" r="2.5" fill="#f87171"/>`;
     if (o.belt) s += `<rect x="${o.robe ? 24 : 26}" y="50" width="${o.robe ? 52 : 48}" height="7" fill="${o.belt}"/>`;
     if (o.star) s += '<polygon points="50,16 54,26 65,26 56,32 59,43 50,36 41,43 44,32 35,26 46,26" fill="' + o.star + '"/>';
     if (o.rainbow) s += ['#f97316', '#facc15', '#22c55e', '#3b82f6', '#a855f7'].map((c, k) => `<rect x="26" y="${14 + k * 8}" width="48" height="8" fill="${c}"/>`).join('');
     if (o.buttons) s += `<circle cx="50" cy="16" r="2.5" fill="${o.buttons}"/><circle cx="50" cy="26" r="2.5" fill="${o.buttons}"/>`;
     if (o.sparkle) s += [[36, 16, 2.5], [60, 22, 2], [44, 34, 1.6], [64, 44, 2.4], [34, 48, 1.8], [54, 52, 1.5], [50, 12, 1.4]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff"/>`).join('')
       + '<polygon points="50,28 52,34 58,34 53,38 55,44 50,40 45,44 47,38 42,34 48,34" fill="#fde047"/>';
-    if (o.emblem) s += `<text x="50" y="40" text-anchor="middle" font-size="20" font-weight="bold" fill="#fff" font-family="sans-serif">${o.emblem}</text>`;
+    if (o.emblem) s += `<text x="50" y="40" text-anchor="middle" font-size="20" font-weight="bold" fill="${o.emblemColor || '#fff'}" font-family="sans-serif">${o.emblem}</text>`;
     return s + '</svg>';
   }
   const HATS = [
@@ -603,7 +623,11 @@
     { e: '🎩', p: 100 }, { e: '🌸', p: 120 }, { e: '🎓', p: 150 }, { e: '⛑️', p: 200 },
     { e: '🪖', p: 250 }, { e: '⭐', p: 280 }, { e: '👑', p: 300 }, { e: '🔥', p: 450 },
     { e: '🌻', p: 90 }, { e: '🍀', p: 130 }, { e: '🍄', p: 170 }, { e: '🎉', p: 220 },
-    { e: '🌙', p: 360 }, { e: '💎', p: 650 }, { e: '🪐', p: 900 }, { e: '🌈', p: 1300 }
+    { e: '🌙', p: 360 }, { e: '💎', p: 650 }, { e: '🪐', p: 900 }, { e: '🌈', p: 1300 },
+    { e: '🍒', p: 70 }, { e: '🍓', p: 110 }, { e: '🌺', p: 140 }, { e: '🎈', p: 190 },
+    { e: '🍩', p: 240 }, { e: '🧁', p: 300 }, { e: '⚡', p: 420 }, { e: '❄️', p: 520 }, { e: '☄️', p: 950 },
+    { e: '🏆', p: Infinity, secret: true, hint: 'Get 3 stars on 5 levels', goal: 5, cur: () => save.stars.filter(x => x >= 3).length },
+    { e: '🎯', p: Infinity, secret: true, hint: 'Collect 10 power-ups in Hero Dash', goal: 10, cur: () => stats().powerups }
   ].sort((a, b) => a.p - b.p);
   const PETS = [
     { e: '', p: 0 }, { e: '🐤', p: 60 }, { e: '🐶', p: 100 }, { e: '🐱', p: 100 },
@@ -611,7 +635,10 @@
     { e: '🦜', p: 220 }, { e: '🦕', p: 300 }, { e: '🐉', p: 400 }, { e: '🦄', p: 450 },
     { e: '🐣', p: 70 }, { e: '🐞', p: 90 }, { e: '🐝', p: 110 }, { e: '🦔', p: 150 },
     { e: '🦦', p: 240 }, { e: '🐧', p: 260 }, { e: '🦉', p: 280 }, { e: '🦈', p: 500 },
-    { e: '🦖', p: 650 }, { e: '🌟', p: 900 }, { e: '🧚', p: 1200 }
+    { e: '🦖', p: 650 }, { e: '🌟', p: 900 }, { e: '🧚', p: 1200 },
+    { e: '🦀', p: 120 }, { e: '🐿️', p: 130 }, { e: '🦎', p: 150 }, { e: '🐬', p: 270 },
+    { e: '🦩', p: 330 }, { e: '🐳', p: 480 }, { e: '🦚', p: 560 }, { e: '🛸', p: 950 },
+    { e: '👾', p: Infinity, secret: true, hint: 'Win a level with all 5 hearts', goal: 1, cur: () => stats().perfect }
   ].sort((a, b) => a.p - b.p);
   // Ship colors are used for your ship in Asteroid Blaster.
   const SHIPS = [
@@ -619,7 +646,10 @@
     { id: 'pink', c: '#f472b6', p: 100 }, { id: 'orange', c: '#fb923c', p: 120 }, { id: 'red', c: '#f87171', p: 140 },
     { id: 'purple', c: '#c084fc', p: 160 }, { id: 'gold', c: '#facc15', p: 250 },
     { id: 'silver', c: '#cbd5e1', p: 190 }, { id: 'emerald', c: '#10b981', p: 220 }, { id: 'neon', c: '#39ff14', p: 420 },
-    { id: 'plasma', c: '#f0abfc', p: 600 }, { id: 'rainbow', c: '#f43f5e', p: 1000, rainbow: true }
+    { id: 'plasma', c: '#f0abfc', p: 600 }, { id: 'rainbow', c: '#f43f5e', p: 1000, rainbow: true },
+    { id: 'ice', c: '#a5f3fc', p: 110 }, { id: 'coral', c: '#fda4af', p: 170 }, { id: 'teal', c: '#2dd4bf', p: 240 },
+    { id: 'indigo', c: '#818cf8', p: 480 }, { id: 'prism', c: '#38bdf8', p: 1400, rainbow: true },
+    { id: 'void', c: '#d946ef', p: Infinity, secret: true, hint: 'Get 30 right in one Speed Run', goal: 30, cur: () => Math.max(0, ...save.sprintBest) }
   ].sort((a, b) => a.p - b.p);
   // Backgrounds change the colors behind the whole game.
   const BACKGROUNDS = [
@@ -628,14 +658,44 @@
     { id: 'candy', a: '#c084fc', b: '#831843', p: 180 }, { id: 'lava', a: '#ea580c', b: '#450a0a', p: 220 },
     { id: 'galaxy', a: '#6d28d9', b: '#020617', p: 260 }, { id: 'gold', a: '#ca8a04', b: '#422006', p: 350 },
     { id: 'mint', a: '#34d399', b: '#064e3b', p: 90 }, { id: 'ice', a: '#7dd3fc', b: '#1e3a8a', p: 160 },
-    { id: 'royal', a: '#a21caf', b: '#1e1b4b', p: 450 }, { id: 'aurora', a: '#0d9488', b: '#4c1d95', p: 1000, anim: true }
+    { id: 'royal', a: '#a21caf', b: '#1e1b4b', p: 450 },
+    { id: 'aurora', a: '#0d9488', b: '#4c1d95', p: 1000, anim: ['#0f766e', '#4c1d95', '#be185d', '#1d4ed8', '#0f766e'] },
+    { id: 'berry', a: '#e11d48', b: '#4c0519', p: 130 }, { id: 'desert', a: '#f59e0b', b: '#78350f', p: 170 },
+    { id: 'deepsea', a: '#0e7490', b: '#020617', p: 230 }, { id: 'storm', a: '#64748b', b: '#0f172a', p: 300 },
+    { id: 'neon', a: '#d946ef', b: '#0f172a', p: 520 },
+    { id: 'cosmos', a: '#4338ca', b: '#020617', p: 1400, anim: ['#020617', '#4338ca', '#db2777', '#0e7490', '#020617'] },
+    { id: 'inferno', a: '#dc2626', b: '#450a0a', anim: ['#450a0a', '#dc2626', '#f97316', '#facc15', '#450a0a'], p: Infinity, secret: true, hint: 'Defeat all 13 bosses', goal: 13, cur: () => stats().bosses.length }
   ].sort((a, b) => a.p - b.p);
+  // Titles show on the home screen.
+  const TITLES = [
+    { id: 'hero', name: 'Math Hero', p: 0 }, { id: 'ninja', name: 'Number Ninja', p: 80 }, { id: 'finder', name: 'Fact Finder', p: 120 },
+    { id: 'tamer', name: 'Times Tamer', p: 200 }, { id: 'speedy', name: 'Speedy Solver', p: 260 }, { id: 'master', name: 'Multiply Master', p: 350 },
+    { id: 'buster', name: 'Boss Buster', p: 500 }, { id: 'legend', name: 'Legend of 12', p: 900 }, { id: 'wizard', name: 'Math Wizard', p: 1200 },
+    { id: 'slayer', name: 'Dragon Slayer', p: Infinity, secret: true, hint: 'Defeat the Dragon Emperor (final boss)', goal: 1, cur: () => (stats().bosses.includes(12) ? 1 : 0) },
+    { id: 'chosen', name: 'The Chosen One', p: Infinity, secret: true, hint: 'Unlock every other secret', goal: 9, cur: () => secretsOpen() }
+  ];
   // Rarity comes from an item's price.
   const RARITIES = [
     { id: 'common', name: 'Common', min: 0 }, { id: 'rare', name: 'Rare', min: 100 }, { id: 'epic', name: 'Epic', min: 200 },
     { id: 'legendary', name: 'Legendary', min: 400 }, { id: 'mythic', name: 'Mythic', min: 800 }
   ];
-  const rarityOf = p => RARITIES.filter(r => p >= r.min).pop();
+  const SECRET = { id: 'secret', name: 'Secret' };
+  const rarityOf = p => p === Infinity ? SECRET : RARITIES.filter(r => p >= r.min).pop();
+  const stats = () => save.stats;
+  const isOpen = it => !it.secret || it.cur() >= it.goal;
+  const ALL_SECRETS = () => [CHARACTERS, OUTFITS, HATS, PETS, SHIPS, BACKGROUNDS, TITLES].flat().filter(it => it.secret);
+  // How many secrets (other than The Chosen One) are unlocked.
+  const secretsOpen = () => ALL_SECRETS().filter(it => it.id !== 'chosen' && it.cur() >= it.goal).length;
+  // Called after games: announces any secret item that just unlocked.
+  function checkSecrets() {
+    save.secretsFound = save.secretsFound || [];
+    const fresh = ALL_SECRETS().filter(it => it.cur() >= it.goal && !save.secretsFound.includes(it.id || it.e));
+    fresh.forEach(it => save.secretsFound.push(it.id || it.e));
+    if (fresh.length) {
+      persist();
+      setTimeout(() => { banner('🔓 Secret item unlocked!'); toast(`🔓 Secret unlocked: ${fresh.map(it => it.name || it.e || it.id).join(', ')} — check the shop!`); sound('win'); }, 900);
+    }
+  }
 
   const $ = id => document.getElementById(id);
   const rand = n => Math.floor(Math.random() * n);
@@ -649,7 +709,7 @@
   function freshSave() {
     return {
       coins: 0, stars: LEVELS.map(() => 0), sprintBest: LEVELS.map(() => 0), facts: {},
-      avatar: '🦊', hat: '', pet: '', outfit: 'tee', ship: 'white', bg: 'night', owned: ['🦊', ''], daily: { date: '', count: 0, claimed: false }, muted: false
+      avatar: '🦊', hat: '', pet: '', outfit: 'tee', title: 'hero', stats: { bestStreak: 0, powerups: 0, perfect: 0, bosses: [] }, secretsFound: [], ship: 'white', bg: 'night', owned: ['🦊', ''], daily: { date: '', count: 0, claimed: false }, muted: false
     };
   }
   function loadSave() {
@@ -664,6 +724,7 @@
       } catch (e) {}
     }
     for (const k in base) if (s[k] === undefined) s[k] = base[k];
+    s.stats = Object.assign({ bestStreak: 0, powerups: 0, perfect: 0, bosses: [] }, s.stats);
     while (s.stars.length < LEVELS.length) s.stars.push(0);
     while (s.sprintBest.length < LEVELS.length) s.sprintBest.push(0);
     return s;
@@ -752,15 +813,17 @@
   function avatarHTML() {
     const o = OUTFITS.find(x => x.id === save.outfit) || OUTFITS[0];
     const gear = [CHARACTERS.find(x => x.e === save.avatar), HATS.find(x => x.e === save.hat), PETS.find(x => x.e === save.pet), o];
+    const secret = gear.some(it => it && it.secret);
     const mythic = gear.some(it => it && rarityOf(it.p).id === 'mythic');
-    return (mythic ? '<span class="aura"></span>' : '') + bodySVG(o) + `<span class="head">${save.avatar}</span>`
+    return (secret ? '<span class="aura secret-aura"></span>' : mythic ? '<span class="aura"></span>' : '') + bodySVG(o) + `<span class="head">${save.avatar}</span>`
       + (save.hat ? `<span class="hat">${save.hat}</span>` : '')
       + (save.pet ? `<span class="pet">${save.pet}</span>` : '');
   }
   function applyBackground() {
     const bg = BACKGROUNDS.find(x => x.id === save.bg);
     const root = document.documentElement.style;
-    document.body.classList.toggle('bg-aurora', !!(bg && bg.anim));
+    document.body.classList.toggle('bg-anim', !!(bg && bg.anim));
+    if (bg && bg.anim) document.body.style.setProperty('--anim', `linear-gradient(120deg, ${bg.anim.join(', ')})`);
     if (!bg || bg.id === 'night') { root.removeProperty('--bg'); root.removeProperty('--bg2'); return; }
     root.setProperty('--bg2', bg.a); root.setProperty('--bg', bg.b);
   }
@@ -842,6 +905,7 @@
 
   function renderHome() {
     $('homeAvatar').innerHTML = avatarHTML();
+    $('homeTitle').textContent = `Ready, ${(TITLES.find(t => t.id === save.title) || TITLES[0]).name}?`;
     const d = todayDaily();
     $('dailyText').textContent = d.claimed ? `✅ ${d.count} facts — done!` : `${d.count} / ${DAILY_GOAL} facts`;
     $('dailyBar').style.width = Math.min(100, d.count / DAILY_GOAL * 100) + '%';
@@ -982,6 +1046,7 @@
   // Shared "you got it" handler — returns coins earned.
   function gotIt(a, b, ms, el) {
     run.streak++; run.best = Math.max(run.best, run.streak); run.answered++;
+    save.stats.bestStreak = Math.max(save.stats.bestStreak, run.streak);
     const timed = Number.isFinite(ms);
     const earned = 10 + (timed && ms < MASTER_MS ? 5 : 0) + (run.streak >= 5 ? 5 : 0);
     run.coins += earned; addCoins(earned);
@@ -1402,7 +1467,7 @@
       gotBox = true;
       box.classList.add('got');
       const id = pick(Object.keys(POWERUPS));
-      run.powerups.push(id);
+      run.powerups.push(id); save.stats.powerups++; persist();
       const pu = POWERUPS[id];
       banner(`${pu.icon} ${pu.name}! ${pu.desc}`);
       sound('win');
@@ -1550,6 +1615,8 @@
     function defeat() {
       frozen = true;
       bossEl.classList.add('defeated');
+      if (!save.stats.bosses.includes(run.level)) save.stats.bosses.push(run.level);
+      persist();
       setQuestion(`${boss.name} defeated!`, 'good small');
       banner(`🏆 Boss defeated! +50 🪙`);
       addCoins(50); run.coins += 50;
@@ -1795,6 +1862,7 @@
       });
       sound(cleared ? 'win' : 'lose');
       if (cleared) confetti();
+      checkSecrets();
       return;
     }
     const stars = !cleared ? 0 : r.hearts >= 5 ? 3 : r.hearts >= 3 ? 2 : 1;
@@ -1802,7 +1870,9 @@
     let bonus = 0;
     if (cleared) { bonus = stars * 25; addCoins(bonus); r.coins += bonus; }
     save.stars[i] = Math.max(save.stars[i], stars);
+    if (cleared && r.hearts >= HEARTS) save.stats.perfect++;
     persist();
+    checkSecrets();
     const title = !cleared ? `Out of hearts on stage ${r.si + 1}! 💔`
       : i === LEVELS.length - 1 ? '👑 You beat the Boss!'
       : wasLocked ? '🎉 New level unlocked!' : '🏆 Level complete!';
@@ -1892,6 +1962,7 @@
     const newBest = s.count > save.sprintBest[i];
     if (newBest) save.sprintBest[i] = s.count;
     persist();
+    checkSecrets();
     showResult({
       title: newBest && s.count > 0 ? '🏆 New personal best!' : '⏱️ Time\'s up!',
       stars: '',
@@ -1929,25 +2000,32 @@
     { slot: 'ship', title: '🛸 Ship colors', note: 'Used for your ship in Asteroid Blaster.', items: SHIPS.map(it => ({ ...it, id: 'ship:' + it.id, v: it.id,
         icon: `<svg viewBox="0 0 40 40" width="34" height="34" class="${it.rainbow ? 'rainbow' : ''}"><polygon points="20,3 34,36 20,28 6,36" fill="#05060f" stroke="${it.c}" stroke-width="3" stroke-linejoin="round"/></svg>` })) },
     { slot: 'bg', title: '🎨 Backgrounds', note: 'Changes the colors behind the game.', items: BACKGROUNDS.map(it => ({ ...it, id: 'bg:' + it.id, v: it.id,
-        icon: `<i class="swatch${it.anim ? ' aurora-swatch' : ''}" style="background:radial-gradient(circle at 30% 20%, ${it.a}, ${it.b})"></i>` })) }
+        icon: it.anim ? `<i class="swatch anim-swatch" style="background:linear-gradient(120deg, ${it.anim.join(', ')})"></i>`
+          : `<i class="swatch" style="background:radial-gradient(circle at 30% 20%, ${it.a}, ${it.b})"></i>` })) },
+    { slot: 'title', title: '🏷️ Titles', note: 'Shows on the home screen: "Ready, Math Hero?"', items: TITLES.map(it => ({ ...it, id: 'title:' + it.id, v: it.id,
+        icon: `<span class="title-chip">${it.name}</span>` })) }
   ];
   function renderShop(stay) {
     $('shopAvatar').innerHTML = avatarHTML();
     const box = $('shopSections'); box.innerHTML = '';
-    box.appendChild(mk('div', 'rarity-key', RARITIES.map(r => `<span class="r-${r.id}"><b class="rar">${r.name}</b></span>`).join('')));
+    box.appendChild(mk('div', 'rarity-key', [...RARITIES, SECRET].map(r => `<span class="r-${r.id}"><b class="rar">${r.name}</b></span>`).join('')));
+    box.appendChild(mk('p', 'shop-note secret-note', `🔒 Secret items can't be bought — unlock them by doing something special. Found ${ALL_SECRETS().filter(isOpen).length} / ${ALL_SECRETS().length}.`));
     SHOP.forEach(sec => {
       box.appendChild(mk('h3', '', sec.title));
       if (sec.note) box.appendChild(mk('p', 'shop-note', sec.note));
       const grid = mk('div', 'shop-grid');
       sec.items.forEach(it => {
-        const owned = it.p === 0 || save.owned.includes(it.id);
+        const open = isOpen(it);
+        const owned = it.secret ? open : it.p === 0 || save.owned.includes(it.id);
         const equipped = save[sec.slot] === it.v;
-        const icon = it.icon || it.e || '🚫';
+        const icon = it.secret && !open ? '<span class="mystery">?</span>' : it.icon || it.e || '🚫';
         const r = rarityOf(it.p);
-        const b = mk('button', `item r-${r.id}` + (equipped ? ' equipped' : '') + (!owned && save.coins < it.p ? ' cant' : ''),
-          `<span class="e">${icon}</span><span class="rar">${r.name}</span><span class="p">${equipped ? '✓ Using' : owned ? 'Use' : '🪙 ' + it.p}</span>`);
-        b.setAttribute('aria-label', `${sec.title} ${it.v || 'none'}`);
+        const price = it.secret && !open ? `🔒 ${Math.min(it.cur(), it.goal)}/${it.goal}` : equipped ? '✓ Using' : owned ? 'Use' : '🪙 ' + it.p;
+        const b = mk('button', `item r-${r.id}` + (equipped ? ' equipped' : '') + (!owned && !it.secret && save.coins < it.p ? ' cant' : ''),
+          `<span class="e">${icon}</span><span class="rar">${r.name}</span><span class="p">${price}</span>`);
+        b.setAttribute('aria-label', `${sec.title} ${it.secret && !open ? 'secret' : it.v || 'none'}`);
         b.onclick = () => {
+          if (it.secret && !open) { toast(`🔒 Secret: ${it.hint} (${Math.min(it.cur(), it.goal)}/${it.goal})`); return; }
           if (!owned) {
             if (save.coins < it.p) { toast(`You need ${it.p - save.coins} more 🪙 — keep playing!`); return; }
             addCoins(-it.p); save.owned.push(it.id); sound('coin'); toast('🛍️ Bought!');
